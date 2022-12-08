@@ -1,5 +1,6 @@
 import os
 import json
+import pathlib
 
 from typing import Optional
 
@@ -20,6 +21,15 @@ def get_files_in_all_sub_directories(root_dir_path: str, filter_func: Optional[c
     :rtype: list
     """
     return [os.path.join(dp, f) for dp, dn, filenames in os.walk(root_dir_path) for f in filenames if (filter_func is None or filter_func(f))]
+
+
+def create_directory(dir_path: str):
+    """Creates all directories of the given path (if not exists)
+
+    :param dir_path: directory path
+    :type dir_path: str
+    """
+    return pathlib.Path(dir_path).mkdir(parents=True, exist_ok=True)
 
 def read_json_file(file_path: str) -> dict:
     """Read a json file
