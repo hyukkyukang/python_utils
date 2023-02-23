@@ -2,7 +2,7 @@ import os
 import json
 import pathlib
 
-from typing import Optional
+from typing import Optional, Tuple
 
 def get_files_in_directory(dir_path: str, filter_func: Optional[callable] = None) -> list:
     """Get paths of files in a directory
@@ -41,3 +41,17 @@ def read_json_file(file_path: str) -> dict:
     """
     with open(file_path, 'r') as f:
         return json.load(f)
+    
+def split_path_into_dir_and_file_name(file_path: str) -> Tuple[str, str]:
+    """Split a file path into directory path and file name
+
+    :param file_path: file path
+    :type file_path: str
+    :return: directory path and file name
+    :rtype: Tuple[str, str]
+    """
+    splitted_file_path = file_path.split("/")
+    dir_name = "/".join(splitted_file_path[:-1])
+    file_name = splitted_file_path[-1]
+    return dir_name, file_name
+    
