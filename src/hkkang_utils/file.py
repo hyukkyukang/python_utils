@@ -1,8 +1,12 @@
-import os
+import inspect
 import json
+import os
 import pathlib
-
+import omegaconf
 from typing import Optional, Tuple
+
+import yaml
+
 
 def get_files_in_directory(dir_path: str, filter_func: Optional[callable] = None) -> list:
     """Get paths of files in a directory
@@ -21,7 +25,6 @@ def get_files_in_all_sub_directories(root_dir_path: str, filter_func: Optional[c
     :rtype: list
     """
     return [os.path.join(dp, f) for dp, dn, filenames in os.walk(root_dir_path) for f in filenames if (filter_func is None or filter_func(f))]
-
 
 def create_directory(dir_path: str):
     """Creates all directories of the given path (if not exists)
@@ -50,8 +53,51 @@ def split_path_into_dir_and_file_name(file_path: str) -> Tuple[str, str]:
     :return: directory path and file name
     :rtype: Tuple[str, str]
     """
-    splitted_file_path = file_path.split("/")
-    dir_name = "/".join(splitted_file_path[:-1])
-    file_name = splitted_file_path[-1]
-    return dir_name, file_name
-    
+    return os.path.dirname(file_path), os.path.basename(file_path)
+
+def read_yaml_file(file_path: str) -> dict:
+    """Read a yaml file
+
+    :param file_path: yaml file path
+    :type file_path: str
+    :return: yaml data
+    :rtype: dict
+    """
+    with open(file_path, "r") as stream:
+        try:
+            return yaml.safe_load(stream) 
+        except yaml.YAMLError as exc:
+            print(exc)
+            return None
+        
+def write_yaml_file(dict_object: dict, file_path: str) -> None:
+    with open(file_path, 'w') as yaml_file:
+        yaml.dump(dict_object, yaml_file, default_flow_style=False)
+
+
+def path_from_current_file(relative_path: str) -> str:
+    """convert relative path to absolute path with respect to the caller's file path"""
+    file_path_of_caller = inspect.stack()[1].filename
+    dir_path_of_caller = os.path.dirname(file_path_of_caller)
+    full_path = os.path.join(dir_path_of_caller, relative_path)
+    return os.path.normpath(full_path)
+
+def load_config_file(file_path: str) -> omegaconf.OmegaConf:
+    """Load a config file
+
+    :param file_path: config file path
+    :type file_path: str
+    :return: config data
+    :rtype: omegaconf.OmegaConf
+    """
+    return omegaconf.OmegaConf.load(file_path)
+
+def write_config_file(config: omegaconf.OmegaConf, file_path: str) -> None:
+    """Write a config file
+
+    :param config: config data
+    :type config: omegaconf.OmegaConf
+    :param file_path: config file path
+    :type file_path: str
+    """
+    omegaconf.OmegaConf.save(config, file_path)

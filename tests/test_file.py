@@ -74,6 +74,21 @@ class Test_file_utils(unittest.TestCase):
     
     def test_get_files_in_all_sub_directories(self):
         pass
+    
+    def test_read_yaml_file(self):
+        yaml_path = "test.yaml"
+        dict_object = {'A':'a', 'B':{'C':'c', 'D':'d', 'E':'e'}}
+        # Write yaml file
+        file_utils.write_yaml_file(dict_object, yaml_path)
+        
+        # Read in yaml file
+        yaml_object = file_utils.read_yaml_file(yaml_path)
+        
+        # Check if the two objects are the same
+        self.assertEqual(dict_object, yaml_object)
+        
+        # Delete yaml file
+        os.remove(yaml_path)
 
 
 if __name__ == "__main__":
