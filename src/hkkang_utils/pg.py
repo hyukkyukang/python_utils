@@ -1,7 +1,7 @@
 import psycopg
 import traceback
 
-from typing import Any, List
+from typing import Any, List, Dict
 
 
 class DBConnector:
@@ -13,7 +13,8 @@ class DBConnector:
         self.conn = None
         self.cur = None
 
-    def __new__(cls, db_id):
+    def __new__(cls, *args, **kwargs):
+        db_id = kwargs.get("db_id", None)
         if not db_id in DBConnector.connector_cache.keys():
             DBConnector.connector_cache[db_id] = super(DBConnector, cls).__new__(cls)
         return DBConnector.connector_cache[db_id]
@@ -23,9 +24,30 @@ class DBConnector:
 
     def fetchall(self) -> List[Any]:
         return self.cur.fetchall()
+    
+    def fetchall_with_col_names(self) -> Dict[str, Any]:
+        rows = self.fetchall()
+        col_names = [col.name for col in self.cur.description]
+        assert len(col_names) == len(set(col_names)), f"Column names are not unique, len({col_names}) vs len({set(col_names)})"
+        assert len(rows) == 0 or len(rows[0]) == len(col_names), f"Number of columns ({len(col_names)}) does not match number of rows ({len(rows[0])})"
+        # Create a dictionary with column names as keys and list of values as values
+        result_dict = {col_name: [] for col_name in col_names}
+        # Insert each column value of a row into the corresponding list
+        for row in rows:
+            for col_name, value in zip(col_names, row):
+                result_dict[col_name].append(value)
+        return result_dict
 
     def fetchone(self) -> List[Any]:
         return self.cur.fetchone()
+
+    def execute_and_fetchall(self, sql: str) -> List[Any]:
+        self.execute(sql)
+        return self.fetchall()
+    
+    def execute_and_fetchall_with_col_names(self, sql: str) -> Dict[str, Any]:
+        self.execute(sql)
+        return self.fetchall_with_col_names()
 
     def close(self) -> None:
         self.conn.close()
@@ -49,8 +71,8 @@ class PostgresConnector(DBConnector):
         self.connect(user_id, passwd, host, port, db_id)
         self.conn.autocommit = True
 
-    def __new__(cls, user_id, passwd, host, port, db_id):
-        return super(PostgresConnector, cls).__new__(cls, db_id)
+    def __new__(cls, *args, **kwargs):
+        return super(PostgresConnector, cls).__new__(cls, *args, **kwargs)
 
     def connect(self, user_id, passwd, host, port, db_id):
         self.conn = psycopg.connect(f"user={user_id} password={passwd} host={host} port={port} dbname={db_id}")

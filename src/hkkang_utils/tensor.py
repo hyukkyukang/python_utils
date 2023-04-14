@@ -1,5 +1,9 @@
+import os
+import random
+from typing import List, Optional, Tuple
+
+import numpy as np
 import torch
-from typing import List, Tuple
 
 
 def show_environment_setting(print_fn):
@@ -63,6 +67,16 @@ def zero_pad_batching(tensor_list: List[torch.Tensor]) -> torch.Tensor:
         return zero_pad_batching_two_dim(tensor_list)
     else:
         raise NotImplementedError(f"Only support 1D and 2D tensor, but found: {tensor_item.shape}")
+
+def set_torch_deterministic(seed: Optional[int]=0):
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
     
 if __name__ == "__main__":
     show_environment_setting()

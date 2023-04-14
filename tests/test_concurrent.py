@@ -15,16 +15,12 @@ class Test_concurrent(unittest.TestCase):
     
     def test_threading(self):
         # Create threads
-        threads = [concurrent_utils.Thread(i, count_million_and_print_name, 1, {"name":f"name_{i}"}) for i in range(10)]
+        threads = [concurrent_utils.Thread(count_million_and_print_name, 1, {"name":f"name_{i}"}) for i in range(10)]
 
         # Start threads
         for thread in threads:
             thread.start()
 
-        # Wait for threads to finish
-        for thread in threads:
-            thread.join()
-        
         # Get results
         results = [thread.result for thread in threads]
         

@@ -1,5 +1,12 @@
 import threading
 
+def shorten_string(text: str) -> str:
+    assert isinstance(text, str), f"text must be str type, but {type(text)} is given."
+    if len(text) > 10:
+        return text[:10] + "..."
+    return text
+    
+
 class Thread(threading.Thread):
     """Please use start method to start thread. start method will call run method.
 
@@ -12,7 +19,7 @@ class Thread(threading.Thread):
         thread1.start()
         thread2.start()
 
-        # Wait for threads to finish
+        # Wait for threads to finish (this is optional: accessing result will call join method anyway)
         thread1.join()
         thread2.join()
         
@@ -20,17 +27,28 @@ class Thread(threading.Thread):
         result1 = thread1.result
         result2 = thread2.result
     """
-    def __init__(self, threadID, func, args=None, kwargs=None):
+    # Static variable
+    cnt = 0
+    def __init__(self, target, args=None, kwargs=None):
         super().__init__()
-        self.threadID = threadID
-        self.func = func
+        Thread.cnt += 1
+        self.threadID = Thread.cnt
+        self.func = target
         self.args = self._parse_args(args)
         self.kwargs = self._parse_kwargs(kwargs)
-        self.result = None
+        self._result = None
+    
+    @property
+    def result(self):
+        if self.is_alive():
+            self.join()
+        return self._result
+    
     def run(self):
-        print("Starting Thread: " + self.func.__name__)
-        self.result = self.func(*self.args, **self.kwargs)
-        print("Exiting Thread: " + self.func.__name__)
+        post_fix = f"Thread {self.threadID}: {self.func.__name__}(args={shorten_string(str(self.args))}, kwargs={shorten_string(str(self.kwargs))})"
+        print(f"Starting {post_fix}")
+        self._result = self.func(*self.args, **self.kwargs)
+        print(f"Exiting {post_fix}")
     
     def _parse_args(self, args):
         if args is None:

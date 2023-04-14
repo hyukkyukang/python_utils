@@ -10,7 +10,7 @@ def infinite_iterator(iterator):
         for item in iterator:
             yield item
 
-            
+
 def property_with_cache(func):
     """Property decorator to cache the result of a property. The result is cached in the attribute of name "_{func.__name__}".
 
@@ -20,11 +20,6 @@ def property_with_cache(func):
     :rtype: function
     """
     @property
-    def decorated_func(self):
-        # Get the attribute name
-        attr_name = f"_{func.__name__}"
-        # Create the attribute if it does not exists
-        if not hasattr(self, attr_name) or getattr(self, attr_name) is None:
-            setattr(self, attr_name, func(self))
-        return getattr(self, attr_name)
+    def decorated_func(*args, **kwargs):
+        raise RuntimeError("Deprecated. use functools.cached_property instead.")
     return decorated_func
