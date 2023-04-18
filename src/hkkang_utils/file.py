@@ -34,7 +34,7 @@ def create_directory(dir_path: str):
     """
     return pathlib.Path(dir_path).mkdir(parents=True, exist_ok=True)
 
-def read_json_file(file_path: str) -> dict:
+def read_json_file(file_path: str, auto_detect_extension=False) -> dict:
     """Read a json file
 
     :param file_path: json file path
@@ -42,8 +42,12 @@ def read_json_file(file_path: str) -> dict:
     :return: json data
     :rtype: dict
     """
-    with open(file_path, 'r') as f:
-        return json.load(f)
+    if auto_detect_extension and file_path.endswith(".jsonl"):
+        with open(file_path, 'r') as f:
+            return [json.loads(line) for line in f.readlines()]
+    else:
+        with open(file_path, 'r') as f:
+            return json.load(f)
     
 def split_path_into_dir_and_file_name(file_path: str) -> Tuple[str, str]:
     """Split a file path into directory path and file name

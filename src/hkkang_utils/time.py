@@ -7,7 +7,7 @@ from typing import Dict, List, Optional
 
 import attrs
 
-from src.hkkang_utils.string import generate_random_str
+from hkkang_utils.string import generate_random_str
 
 
 @attrs.define

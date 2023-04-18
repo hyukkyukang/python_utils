@@ -12,3 +12,6 @@ def do_flatten_list(list_of_list: List[List[Any]])-> List[Any]:
     :rtype: List[Any]
     """
     return functools.reduce(operator.iconcat, list_of_list, [])
+
+def map_many(functions: List, iterable:List[Any]) -> List[Any]:
+    return list(functools.reduce(lambda x, y: map(y, x), functions, iterable))
