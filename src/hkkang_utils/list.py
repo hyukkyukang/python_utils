@@ -1,8 +1,8 @@
-import operator
 import functools
+import operator
+from typing import Any, List
 
 
-from typing import List, Any
 def do_flatten_list(list_of_list: List[List[Any]])-> List[Any]:
     """Flatten a list of list to a list
 
@@ -15,3 +15,11 @@ def do_flatten_list(list_of_list: List[List[Any]])-> List[Any]:
 
 def map_many(functions: List, iterable:List[Any]) -> List[Any]:
     return list(functools.reduce(lambda x, y: map(y, x), functions, iterable))
+
+def get(items: List[Any], idx: int, default: Any="") -> Any:
+    if idx < 0:
+        return default
+    try:
+        return items[idx]
+    except IndexError:
+        return default

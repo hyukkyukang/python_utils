@@ -21,6 +21,18 @@ class Test_list_utils(unittest.TestCase):
         result = list_utils.map_many(functions, input_list)
         self.assertEqual(result, gold, f"result: {result}, gold: {gold}")
 
+    def test_get(self):
+        input_list = [1,2,3,4,5]
+        result1 = list_utils.get(input_list, 3, 0)
+        gold1 = 4
+        result2 = list_utils.get(input_list, 10, 0)
+        gold2 = 0
+        result3 = list_utils.get(input_list, -1, 0)
+        gold3 = 0
+        self.assertEqual(result1, gold1, f"result1: {result1}, gold1: {gold1}")
+        self.assertEqual(result2, gold2, f"result2: {result2}, gold2: {gold2}")
+        self.assertEqual(result3, gold3, f"result3: {result3}, gold3: {gold3}")
+
 
 if __name__ == "__main__":
     unittest.main()

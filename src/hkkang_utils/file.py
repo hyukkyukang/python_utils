@@ -2,13 +2,14 @@ import inspect
 import json
 import os
 import pathlib
-import omegaconf
+import pickle
 from typing import Optional, Tuple
 
+import omegaconf
 import yaml
 
 
-def get_files_in_directory(dir_path: str, filter_func: Optional[callable] = None) -> list:
+def get_files_in_directory(dir_path: str, filter_func: Optional[callable] = None, return_with_dir=False) -> list:
     """Get paths of files in a directory
     :param dir_path: path of directory that you want to get files from
     :type dir_path: str
@@ -17,7 +18,10 @@ def get_files_in_directory(dir_path: str, filter_func: Optional[callable] = None
     :return: list of file paths in the directory which are valid
     :rtype: list
     """
-    return [os.path.join(dir_path, f) for f in os.listdir(dir_path) if os.path.isfile(os.path.join(dir_path, f)) and (filter_func is None or filter_func(f))]
+    file_names = [f for f in os.listdir(dir_path) if os.path.isfile(os.path.join(dir_path, f)) and (filter_func is None or filter_func(f))]
+    if return_with_dir:
+        return [os.path.join(dir_path, f) for f in file_names]
+    return file_names
 
 def get_files_in_all_sub_directories(root_dir_path: str, filter_func: Optional[callable] = None) -> list:
     """Get paths of files in all sub directories
@@ -78,13 +82,28 @@ def write_yaml_file(dict_object: dict, file_path: str) -> None:
     with open(file_path, 'w') as yaml_file:
         yaml.dump(dict_object, yaml_file, default_flow_style=False)
 
+def write_pickle_file(object_to_save, file_path: str) -> None:
+    """Write a pickle file
 
-def path_from_current_file(relative_path: str) -> str:
-    """convert relative path to absolute path with respect to the caller's file path"""
-    file_path_of_caller = inspect.stack()[1].filename
-    dir_path_of_caller = os.path.dirname(file_path_of_caller)
-    full_path = os.path.join(dir_path_of_caller, relative_path)
-    return os.path.normpath(full_path)
+    :param object_to_save: object to save
+    :type object_to_save: any
+    :param file_path: pickle file path
+    :type file_path: str
+    """
+    with open(file_path, 'wb') as f:
+        pickle.dump(object_to_save, f)
+
+def read_pickle_file(file_path: str) -> any:
+    """Read a pickle file
+
+    :param file_path: pickle file path
+    :type file_path: str
+    :return: object
+    :rtype: any
+    """
+    with open(file_path, 'rb') as f:
+        return pickle.load(f)
+
 
 def load_config_file(file_path: str) -> omegaconf.OmegaConf:
     """Load a config file
@@ -105,3 +124,11 @@ def write_config_file(config: omegaconf.OmegaConf, file_path: str) -> None:
     :type file_path: str
     """
     omegaconf.OmegaConf.save(config, file_path)
+    
+    
+def path_from_current_file(relative_path: str) -> str:
+    """convert relative path to absolute path with respect to the caller's file path"""
+    file_path_of_caller = inspect.stack()[1].filename
+    dir_path_of_caller = os.path.dirname(file_path_of_caller)
+    full_path = os.path.join(dir_path_of_caller, relative_path)
+    return os.path.normpath(full_path)

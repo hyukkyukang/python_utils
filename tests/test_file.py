@@ -62,7 +62,7 @@ class Test_file_utils(unittest.TestCase):
         
     def test_get_files_in_directory(self):
         with testing_environment() as env:
-            retrieved_file_paths = file_utils.get_files_in_directory(env.dir_name)
+            retrieved_file_paths = file_utils.get_files_in_directory(env.dir_name, return_with_dir=True)
             self.assertEqual(len(retrieved_file_paths), env.num_files)
             self.assertSetEqual(set(retrieved_file_paths), set(env.file_paths))
     
