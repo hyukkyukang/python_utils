@@ -34,6 +34,22 @@ class Test_list_utils(unittest.TestCase):
         self.assertEqual(result3, gold3, f"result3: {result3}, gold3: {gold3}")
 
 
+    def test_divide_into_chunks(self):
+        item1 = list(range(10))
+        pred = list_utils.divide_into_chunks(item1, 4)
+        gold1 = [[0,1,2], [3,4,5], [6,7,8], [9]]
+        
+        # Validate results
+        self.assertEqual(pred, gold1, f"pred: {pred}, gold1: {gold1}")
+
+    def test_chunks(self):
+        item1 = list(range(10))
+        pred = list(list_utils.chunks(item1, 3))
+        gold1 = [[0,1,2], [3,4,5], [6,7,8], [9]]
+        
+        # Validate results
+        self.assertEqual(pred, gold1, f"pred: {pred}, gold1: {gold1}")
+
 if __name__ == "__main__":
     unittest.main()
     

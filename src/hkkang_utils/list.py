@@ -1,6 +1,7 @@
 import functools
+import math
 import operator
-from typing import Any, List
+from typing import Any, List, Iterable, Union
 
 
 def do_flatten_list(list_of_list: List[List[Any]])-> List[Any]:
@@ -23,3 +24,18 @@ def get(items: List[Any], idx: int, default: Any="") -> Any:
         return items[idx]
     except IndexError:
         return default
+    
+def divide_into_chunks(lst: List[Any], num_chunks: int) -> List[List[Any]]:
+    num_of_items_in_chunk = math.ceil(len(lst) / num_chunks)
+    return [lst[i:i+num_of_items_in_chunk] for i in range(0, len(lst), num_of_items_in_chunk)]
+
+def chunks(iterator: Union[Iterable[Any], List[Any]], chunk_size: int) -> Iterable[List[Any]]:
+    """Yield successive n-sized chunks from iterator."""
+    chunk = []
+    for x in iterator:
+        chunk.append(x)
+        if len(chunk) >= chunk_size:
+            yield chunk
+            chunk = []
+    if len(chunk) > 0:
+        yield chunk
