@@ -7,6 +7,7 @@ import pickle
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import omegaconf
+import tqdm
 import yaml
 
 
@@ -177,17 +178,23 @@ def write_config_file(config: omegaconf.OmegaConf, file_path: str) -> None:
 
 # Related to csv file
 def read_csv_file(
-    file_path: str, delimiter: str = ",", process_row_func: Callable = None
+    file_path: str,
+    delimiter: str = ",",
+    quotechar: str = '"',
+    show_progress: bool = False,
+    process_row_func: Callable = None,
 ) -> List[Dict[str, Any]]:
+    dict_list = []
     with open(file_path, "r") as f:
-        tsv_file_reader = csv.reader(f, delimiter=delimiter)
+        tsv_file_reader = csv.reader(f, delimiter=delimiter, quotechar=quotechar)
+        # Get headers
         header = next(tsv_file_reader)
-        dict_list = []
-        for row in tsv_file_reader:
-            if process_row_func:
-                row = process_row_func(row)
+        # Get values
+        file_iterator = tqdm.tqdm(tsv_file_reader) if show_progress else tsv_file_reader
+        for row in file_iterator:
+            row = process_row_func(row) if process_row_func else row
             dict_list.append(dict(zip(header, row)))
-        return dict_list
+    return dict_list
 
 
 def write_csv_file(
