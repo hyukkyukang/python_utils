@@ -15,11 +15,14 @@ class Test_concurrent(unittest.TestCase):
     
     def test_threading(self):
         # Create threads
-        threads = [concurrent_utils.Thread(count_million_and_print_name, 1, {"name":f"name_{i}"}) for i in range(10)]
+        threads = [concurrent_utils.Thread(count_million_and_print_name, 1, name=f"name_{i}") for i in range(10)]
 
         # Start threads
         for thread in threads:
             thread.start()
+
+        for thread in threads:
+            thread.join()
 
         # Get results
         results = [thread.result for thread in threads]
@@ -27,6 +30,24 @@ class Test_concurrent(unittest.TestCase):
         # Validate results
         for i, result in enumerate(results):
             self.assertEqual(result, f"name_{i}")        
+
+    def test_multi_processing(self):
+        multiprocessor = concurrent_utils.MultiProcessor(4)
+        
+        # Start processes
+        for i in range(10):
+            multiprocessor.run(count_million_and_print_name, 1, name=f"name_{i}")
+        
+        multiprocessor.join()
+        
+        # Get results
+        results = multiprocessor.results
+
+        
+        # Validate results
+        for i, result in enumerate(results):
+            self.assertEqual(result, f"name_{i}")       
+
 
 if __name__ == "__main__":
     unittest.main()
