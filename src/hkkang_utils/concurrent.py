@@ -1,9 +1,9 @@
 import functools
 import logging
 import threading
-from concurrent.futures import ProcessPoolExecutor
-from typing import Any, Callable, List
 import traceback
+from concurrent.futures import ProcessPoolExecutor
+from typing import Callable
 
 
 def _shorten_string(text: str) -> str:
@@ -11,6 +11,7 @@ def _shorten_string(text: str) -> str:
     if len(text) > 10:
         return text[:10] + "..."
     return text
+
 
 class Thread(threading.Thread):
     """Please use start method to start thread. start method will call run method.
@@ -77,12 +78,13 @@ class Thread(threading.Thread):
         else:
             raise ValueError(f"kwargs must be dict type, but {type(kwargs)} is given.")
 
-class MultiProcessor():
+
+class MultiProcessor:
     """
     example:
         # Initialize multi processor
         multiprocessor = Multiprocessor(num_process=4)
-        
+
         # Run processes concurrently
         multiprocessor.run(count_million_and_print_name, 1, name=f"name_{i}")
         multiprocessor.run(count_million_and_print_name, 2, name=f"name_{i}")
@@ -95,6 +97,7 @@ class MultiProcessor():
         # Get results
         results = multiprocessor.results
     """
+
     def __init__(self, num_workers: int, store_results: bool = True):
         self.num_workers = num_workers
         self._futures = []
@@ -105,46 +108,52 @@ class MultiProcessor():
     @property
     def results(self):
         return self._results
-    
+
     @functools.cached_property
     def executor(self):
         return ProcessPoolExecutor(max_workers=self.num_workers)
-    
+
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exc_type, exc_value, tb):
         # Clean up: Wait for all processes to finish
         self.join()
-        
+
         if exc_type is not None:
             traceback.print_exception(exc_type, exc_value, tb)
             return False
         return True
-    
+
     def _check_if_valid_function(self, func: Callable):
         if not hasattr(func, "__call__"):
-            self.logger.error(f"Given function is not callable. Please use callable function.")
+            self.logger.error(
+                f"Given function is not callable. Please use callable function."
+            )
         elif func.__name__ == "<lambda>":
-            self.logger.error(f"Given function is lambda function. Please use normal function instead of lambda function.")
-        else:            
+            self.logger.error(
+                f"Given function is lambda function. Please use normal function instead of lambda function."
+            )
+        else:
             return True
         return False
-    
+
     def run(self, *args, **kwargs):
-        """Pass callable function in the first argument. 
+        """Pass callable function in the first argument.
         Then, pass other arguments and keyword arguments as you would to the callable function.
         """
         # Extract function and arguments
         assert len(args) > 0, f"Please pass function as the first argument."
         func: Callable = args[0]
         args = args[1:]
-        
+
         # Check the given function is not lambda function
         self._check_if_valid_function(func)
-        
-        self._futures.append(self.executor.submit(functools.partial(func, *args, **kwargs)))
-    
+
+        self._futures.append(
+            self.executor.submit(functools.partial(func, *args, **kwargs))
+        )
+
     def join(self):
         if self.store_results:
             self._results = [future.result() for future in self._futures]
@@ -153,6 +162,7 @@ class MultiProcessor():
                 future.result()
         # Free memory
         self.executor.shutdown()
+
 
 if __name__ == "__main__":
     pass

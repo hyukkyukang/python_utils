@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hkkang_utils"
-version = "0.1.70"
+version = "0.1.72"
 authors = [{name="Hyukkyu Kang", email="hyukkyukang@gmail.com"}]
 description = "A collection of useful util functions"
 readme = "README.md"
@@ -16,12 +16,14 @@ classifiers = [
 ]
 
 dependencies=[
+    "attrs",
     "nltk",
     "numpy",
     "torch",
     "pglast",
     "psycopg[binary,pool]",
-    "omegaconf"
+    "omegaconf",
+    "slack_sdk"
 ]
 
 [project.urls]
