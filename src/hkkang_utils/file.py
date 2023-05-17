@@ -1,6 +1,6 @@
 import csv
 import inspect
-import json
+import ujson
 import os
 import pathlib
 import pickle
@@ -77,7 +77,12 @@ def path_from_current_file(relative_path: str) -> str:
 
 
 # Related to json files
-def read_json_file(file_path: str, auto_detect_extension=False) -> dict:
+def read_jsonl_file(file_path: str) -> Dict:
+    with open(file_path, "r") as f:
+        return [ujson.loads(line) for line in f.readlines()]
+
+
+def read_json_file(file_path: str, auto_detect_extension=False) -> Dict:
     """Read a json file
 
     :param file_path: json file path
@@ -86,15 +91,14 @@ def read_json_file(file_path: str, auto_detect_extension=False) -> dict:
     :rtype: dict
     """
     if auto_detect_extension and file_path.endswith(".jsonl"):
-        with open(file_path, "r") as f:
-            return [json.loads(line) for line in f.readlines()]
+        return read_jsonl_file(file_path)
     else:
         with open(file_path, "r") as f:
-            return json.load(f)
+            return ujson.load(f)
 
 
 # Related to yaml files
-def read_yaml_file(file_path: str) -> dict:
+def read_yaml_file(file_path: str) -> Dict:
     """Read a yaml file
 
     :param file_path: yaml file path
