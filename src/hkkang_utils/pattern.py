@@ -1,17 +1,34 @@
-# This file containes design patterns
-class Singleton(object):
-    """Singleton class"""
+import abc
+from typing import Dict
 
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, "_instance"):
-            cls._instance = super().__new__(cls)
-        return cls._instance
+
+# This file containes design patterns
+class SingletonMeta(type):
+    """Meta Singleton class"""
+
+    _instances: Dict = dict()
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances.keys():
+            cls._instances[cls] = super(SingletonMeta, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class SingletonABCMeta(abc.ABCMeta):
+    """Abstract and meta Singleton class"""
+
+    _instances: Dict = dict()
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances.keys():
+            cls._instances[cls] = super(SingletonABCMeta, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
 # Decorator
 def singleton(cls):
     """Singleton decorator"""
-    instance = None
+    instance: Dict = None
 
     def wrapper(*args, **kwargs):
         nonlocal instance
@@ -22,23 +39,60 @@ def singleton(cls):
     return wrapper
 
 
-class SingletonWithArgs(object):
-    """Singleton class with arguments. One object is created for each set of arguments"""
+class SingletonMetaWithArgs(type):
+    """Meta Singleton class with arguments. One object is created for each set of arguments"""
 
-    def __new__(cls, *args, **kwargs):
+    _instances: Dict = dict()
+
+    def __call__(cls, *args, **kwargs):
         # Get instance key
         instance_key = cls.__repr_args__(*args, **kwargs)
-        # Create instance dict if not exists
-        if not hasattr(cls, "_instance_dict"):
-            cls._instance_dict = {}
+        if cls not in cls._instances.keys():
+            cls._instances[cls] = dict()
         # Create instance if not exists
-        if instance_key not in cls._instance_dict:
-            cls._instance_dict[instance_key] = super(SingletonWithArgs, cls).__new__(
-                cls
-            )
-        # Return instance
-        return cls._instance_dict[instance_key]
+        if instance_key not in cls._instances[cls].keys():
+            cls._instances[cls][instance_key] = super(
+                SingletonMetaWithArgs, cls
+            ).__call__(*args, **kwargs)
+        return cls._instances[cls][instance_key]
 
     @staticmethod
     def __repr_args__(*args, **kwargs):
         return str(args) + str(kwargs)
+
+
+class SingletonABCMetaWithArgs(abc.ABCMeta):
+    """Abstract and Meta Singleton class with arguments. One object is created for each set of arguments"""
+
+    _instances: Dict = dict()
+
+    def __call__(cls, *args, **kwargs):
+        # Get instance key
+        instance_key = cls.__repr_args__(*args, **kwargs)
+        if cls not in cls._instances.keys():
+            cls._instances[cls] = dict()
+        # Create instance if not exists
+        if instance_key not in cls._instances[cls].keys():
+            cls._instances[cls][instance_key] = super(
+                SingletonABCMetaWithArgs, cls
+            ).__call__(*args, **kwargs)
+        return cls._instances[cls][instance_key]
+
+    @staticmethod
+    def __repr_args__(*args, **kwargs):
+        return str(args) + str(kwargs)
+
+
+# Decorator
+def singletonWithArgs(cls):
+    """SingletonWithArgs decorator"""
+    instances: Dict = dict()
+
+    def wrapper(*args, **kwargs):
+        nonlocal instances
+        instance_key = SingletonMetaWithArgs.__repr_args__(*args, **kwargs)
+        if instance_key not in instances.keys():
+            instances[instance_key] = cls(*args, **kwargs)
+        return instances[instance_key]
+
+    return wrapper
