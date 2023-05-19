@@ -1,3 +1,6 @@
+import sys
+
+sys_version = sys.version_info
 __version__ = "0.0.1"
 __all__ = [
     "concurrent",
@@ -8,6 +11,7 @@ __all__ = [
     "metrics",
     "misc",
     "ml",
+    "pattern",
     "pg",
     "slack",
     "socket",
@@ -18,7 +22,8 @@ __all__ = [
     "time",
 ]
 
-import hkkang_utils.concurrent
+if sys_version[0] == 3 and sys_version[1] > 7:
+    import hkkang_utils.concurrent
 import hkkang_utils.file
 import hkkang_utils.io
 import hkkang_utils.list
@@ -26,6 +31,7 @@ import hkkang_utils.logger
 import hkkang_utils.metrics
 import hkkang_utils.misc
 import hkkang_utils.ml
+import hkkang_utils.pattern
 import hkkang_utils.pg
 import hkkang_utils.slack
 import hkkang_utils.socket

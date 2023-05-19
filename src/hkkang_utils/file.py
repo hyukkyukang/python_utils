@@ -77,12 +77,7 @@ def path_from_current_file(relative_path: str) -> str:
 
 
 # Related to json files
-def read_jsonl_file(file_path: str) -> Dict:
-    with open(file_path, "r") as f:
-        return [ujson.loads(line) for line in f.readlines()]
-
-
-def read_json_file(file_path: str, auto_detect_extension=False) -> Dict:
+def read_json_file(file_path: str, auto_detect_extension: bool = False) -> Dict:
     """Read a json file
 
     :param file_path: json file path
@@ -95,6 +90,33 @@ def read_json_file(file_path: str, auto_detect_extension=False) -> Dict:
     else:
         with open(file_path, "r") as f:
             return ujson.load(f)
+
+
+def read_jsonl_file(file_path: str) -> Dict:
+    with open(file_path, "r") as f:
+        return [ujson.loads(line) for line in f.readlines()]
+
+
+def write_json_file(
+    dict_object: Dict,
+    file_path: str,
+    indent: int = 4,
+    auto_detect_extension: bool = False,
+) -> None:
+    if auto_detect_extension and file_path.endswith(".jsonl"):
+        return write_jsonl_file(file_path)
+    else:
+        with open(file_path, "w") as f:
+            ujson.dump(dict_object, f, indent=indent)
+
+
+def write_jsonl_file(
+    dict_object: Dict,
+    file_path: str,
+):
+    with open(file_path, "w") as f:
+        for line in dict_object:
+            f.write(f"{ujson.dumps(line)}\n")
 
 
 # Related to yaml files

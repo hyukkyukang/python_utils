@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hkkang_utils"
-version = "0.1.75"
+version = "0.1.82"
 authors = [{name="Hyukkyu Kang", email="hyukkyukang@gmail.com"}]
 description = "A collection of useful util functions"
 readme = "README.md"
@@ -17,6 +17,7 @@ classifiers = [
 
 dependencies=[
     "attrs",
+    "python-dotenv",
     "nltk",
     "numpy",
     "omegaconf",
