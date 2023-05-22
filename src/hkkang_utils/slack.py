@@ -1,3 +1,5 @@
+import contextlib
+import logging
 import os
 
 import attrs
@@ -13,6 +15,8 @@ misc_utils.load_dotenv(stack_depth=2)
 DEFAULT_ACCESS_TOKEN = (
     os.environ["SLACK_ACCESS_TOKEN"] if "SLACK_ACCESS_TOKEN" in os.environ else None
 )
+
+logger = logging.getLogger("SlackMessenger")
 
 
 @attrs.define
@@ -59,15 +63,33 @@ def send_message(
     if append_src_info:
         ip = socket_utils.get_local_ip()
         host_name = socket_utils.get_host_name()
-        text = f"Message from {host_name}({ip}):\n{text}"
+        text_with_prefix = f"Message from {host_name}({ip}):\n{text}"
 
     # Send message
     try:
-        response = client.chat_postMessage(channel=channel, text=text)
-        assert response["message"]["text"] == text
-        print(f"Message sent to channel {channel}")
+        response = client.chat_postMessage(channel=channel, text=text_with_prefix)
+        assert response["message"]["text"] == text_with_prefix
+        logger.info(f"Sending message to channel {channel}: {text}")
     except SlackApiError as e:
         # You will get a SlackApiError if "ok" is False
         assert e.response["ok"] is False
         assert e.response["error"], "channel_not_found"
-        print(f"Got an error: {e.response['error']}")
+        logger.info(f"Got an error: {e.response['error']}")
+
+
+@contextlib.contextmanager
+def slack_notification(
+    channel: str,
+    success_msg: str = None,
+    error_msg: str = None,
+    token: str = DEFAULT_ACCESS_TOKEN,
+):
+    slack_messenger = SlackMessenger(channel=channel, token=token)
+    try:
+        yield slack_messenger
+        if success_msg is not None:
+            slack_messenger.send(success_msg)
+    except Exception as e:
+        if error_msg is not None:
+            slack_messenger.send(f"{error_msg} ({e.__class__.__name__}: {e})")
+        raise e
