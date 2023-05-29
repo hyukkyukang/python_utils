@@ -17,7 +17,7 @@ class Thread(threading.Thread):
     """Please use start method to start thread. start method will call run method.
     If you are doing cpu intensive task, please use MultiProcessor class instead of this class. It's much faster.
 
-    example:
+    Example:
         # Initialize threads
         thread1 = concurrent_utils.Thread(count_million_and_print_name, 1, {"name":"name_1"})
         thread2 = concurrent_utils.Thread(count_million_and_print_name, 2, {"name":"name_2"})

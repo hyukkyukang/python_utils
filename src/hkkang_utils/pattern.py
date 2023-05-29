@@ -1,12 +1,12 @@
 import abc
-from typing import Dict
+from typing import Callable, Dict
 
 
 # This file containes design patterns
 class SingletonMeta(type):
     """Meta Singleton class"""
 
-    _instances: Dict = dict()
+    _instances: Dict[str, Callable] = dict()
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances.keys():
@@ -17,7 +17,7 @@ class SingletonMeta(type):
 class SingletonABCMeta(abc.ABCMeta):
     """Abstract and meta Singleton class"""
 
-    _instances: Dict = dict()
+    _instances: Dict[str, Callable] = dict()
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances.keys():
@@ -28,7 +28,7 @@ class SingletonABCMeta(abc.ABCMeta):
 # Decorator
 def singleton(cls):
     """Singleton decorator"""
-    instance: Dict = None
+    instance: Dict[str, Callable] = None
 
     def wrapper(*args, **kwargs):
         nonlocal instance
@@ -42,7 +42,7 @@ def singleton(cls):
 class SingletonMetaWithArgs(type):
     """Meta Singleton class with arguments. One object is created for each set of arguments"""
 
-    _instances: Dict = dict()
+    _instances: Dict[str, Dict[str, Callable]] = dict()
 
     def __call__(cls, *args, **kwargs):
         # Get instance key
@@ -64,7 +64,7 @@ class SingletonMetaWithArgs(type):
 class SingletonABCMetaWithArgs(abc.ABCMeta):
     """Abstract and Meta Singleton class with arguments. One object is created for each set of arguments"""
 
-    _instances: Dict = dict()
+    _instances: Dict[str, Dict[str, Callable]] = dict()
 
     def __call__(cls, *args, **kwargs):
         # Get instance key
