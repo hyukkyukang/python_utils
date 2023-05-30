@@ -22,6 +22,7 @@ else:
         import dataclasses
 
 
+# Dataclass
 @dataclasses.dataclass
 class Period:
     start_time: float
@@ -32,6 +33,22 @@ class Period:
         return self.end_time - self.start_time
 
 
+# Utility functions
+def prettify_time(time_in_sec: float) -> str:
+    if time_in_sec < 60:
+        return f"{time_in_sec:.2f} seconds"
+    return f"{minute(time_in_sec):.0f}min {second(time_in_sec):.2f}sec"
+
+
+def minute(time_in_sec: float) -> float:
+    return time_in_sec / 60
+
+
+def second(time_in_sec: float) -> float:
+    return time_in_sec % 60
+
+
+# Timer class
 class TimerMeta(SingletonABCMetaWithArgs):
     _call_cnt: Dict[str, Dict[str, int]] = dict()
 
@@ -188,19 +205,23 @@ class Timer(metaclass=TimerMeta):
 
     # Methods for printing the measured time
     def show_elapsed_time(self) -> None:
-        self.logger.info(f"Elapsed time: {self.elapsed_time:.2f} seconds")
+        self.logger.info(f"Elapsed time: {prettify_time(self.elapsed_time)}")
 
     def show_total_elapsed_time(self) -> None:
-        self.logger.info(f"Total elapsed time: {self.total_elapsed_time:.2f} seconds")
+        self.logger.info(
+            f"Total elapsed time: {prettify_time(self.total_elapsed_time)}"
+        )
 
     def show_avg_elapsed_time(self) -> None:
-        self.logger.info(f"Average elapsed time: {self.avg_elapsed_time:.2f} seconds")
+        self.logger.info(
+            f"Average elapsed time: {prettify_time(self.avg_elapsed_time)}"
+        )
 
     def summarize_measured_time(self) -> Tuple[str, int, float, float]:
         self.logger.info(f"Function name: {self.name}")
         self.logger.info(f"Call count: {self.call_cnt}")
-        self.logger.info(f"Average elapsed time: {self.avg_elapsed_time:.2f} seconds")
-        self.logger.info(f"Total elapsed time: {self.total_elapsed_time:.2f} seconds")
+        self.show_avg_elapsed_time()
+        self.show_total_elapsed_time()
         return self.name, self.call_cnt, self.avg_elapsed_time, self.total_elapsed_time
 
     @classmethod
@@ -211,6 +232,7 @@ class Timer(metaclass=TimerMeta):
         return return_values
 
 
+# Decorator for timer
 def measure_time(func: Callable, print_measured_time: bool = True) -> Callable:
     """Decorator to measure the elapsed time of a function.
 

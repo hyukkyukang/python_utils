@@ -93,7 +93,7 @@ def zero_pad_batching(tensor_list: List[torch.Tensor]) -> torch.Tensor:
         )
 
 
-def set_torch_deterministic(seed: Optional[int] = 0):
+def set_torch_deterministic(seed: Optional[int] = 0) -> None:
     os.environ["PYTHONHASHSEED"] = str(seed)
     random.seed(seed)
     np.random.seed(seed)
@@ -104,11 +104,30 @@ def set_torch_deterministic(seed: Optional[int] = 0):
     torch.backends.cudnn.deterministic = True
 
 
-def is_torch_compile_available():
+def is_torch_compile_available() -> None:
     if torch.cuda.is_available():
         device_cap = torch.cuda.get_device_capability()
         return device_cap[0] >= 7
     return False
+
+
+def calculate_model_size(model: torch.nn.Module) -> float:
+    """Compute model size in MB
+
+    :param model: model to compute size
+    :type model: torch.nn.Module
+    :return: model size in MB
+    :rtype: float
+    """
+    param_size = 0
+    for param in model.parameters():
+        param_size += param.nelement() * param.element_size()
+    buffer_size = 0
+    for buffer in model.buffers():
+        buffer_size += buffer.nelement() * buffer.element_size()
+
+    model_size_in_mb = (param_size + buffer_size) / 1024**2
+    return model_size_in_mb
 
 
 if __name__ == "__main__":
