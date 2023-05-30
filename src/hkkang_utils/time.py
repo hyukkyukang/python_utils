@@ -1,15 +1,28 @@
 import inspect
 import logging
+import sys
 import time as time_module
 from contextlib import contextmanager
-from typing import Callable, Dict, List, Optional
-
-import attrs
+from typing import Callable, Dict, List, Optional, Tuple
 
 from hkkang_utils.pattern import SingletonABCMetaWithArgs
 
+# Import dataclasses according to Python version
+sys_version = sys.version_info
+if sys_version[0] == 3 and sys_version[1] >= 7:
+    import dataclasses
+else:
+    try:
+        import dataclasses
+    except:
+        import subprocess
 
-@attrs.define
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "dataclasses"])
+    finally:
+        import dataclasses
+
+
+@dataclasses.dataclass
 class Period:
     start_time: float
     end_time: float
@@ -100,6 +113,8 @@ class Timer(metaclass=TimerMeta):
 
     @property
     def name(self) -> str:
+        if self.class_name is None:
+            return self.func_name
         return f"{self.class_name}.{self.func_name}"
 
     @property
@@ -172,14 +187,28 @@ class Timer(metaclass=TimerMeta):
         return self.elapsed_time
 
     # Methods for printing the measured time
-    def show_elapsed_time(self):
+    def show_elapsed_time(self) -> None:
         self.logger.info(f"Elapsed time: {self.elapsed_time:.2f} seconds")
 
-    def show_total_elapsed_time(self):
+    def show_total_elapsed_time(self) -> None:
         self.logger.info(f"Total elapsed time: {self.total_elapsed_time:.2f} seconds")
 
-    def show_avg_elapsed_time(self):
+    def show_avg_elapsed_time(self) -> None:
         self.logger.info(f"Average elapsed time: {self.avg_elapsed_time:.2f} seconds")
+
+    def summarize_measured_time(self) -> Tuple[str, int, float, float]:
+        self.logger.info(f"Function name: {self.name}")
+        self.logger.info(f"Call count: {self.call_cnt}")
+        self.logger.info(f"Average elapsed time: {self.avg_elapsed_time:.2f} seconds")
+        self.logger.info(f"Total elapsed time: {self.total_elapsed_time:.2f} seconds")
+        return self.name, self.call_cnt, self.avg_elapsed_time, self.total_elapsed_time
+
+    @classmethod
+    def summarize_measured_times(cls) -> List[Tuple[str, int, float, float]]:
+        return_values = []
+        for timer in Timer._instances[cls].values():
+            return_values.append(timer.summarize_measured_time())
+        return return_values
 
 
 def measure_time(func: Callable, print_measured_time: bool = True) -> Callable:
