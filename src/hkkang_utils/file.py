@@ -1,13 +1,13 @@
 import csv
 import inspect
-import ujson
 import os
 import pathlib
 import pickle
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import omegaconf
 import tqdm
+import ujson
 import yaml
 
 
@@ -77,7 +77,11 @@ def path_from_current_file(relative_path: str) -> str:
 
 
 # Related to json files
-def read_json_file(file_path: str, auto_detect_extension: bool = False) -> Dict:
+def read_json_file(
+    file_path: str,
+    auto_detect_extension: bool = False,
+    encoding: Optional[str] = None,
+) -> Dict:
     """Read a json file
 
     :param file_path: json file path
@@ -86,14 +90,14 @@ def read_json_file(file_path: str, auto_detect_extension: bool = False) -> Dict:
     :rtype: dict
     """
     if auto_detect_extension and file_path.endswith(".jsonl"):
-        return read_jsonl_file(file_path)
+        return read_jsonl_file(file_path, encoding=encoding)
     else:
-        with open(file_path, "r") as f:
+        with open(file_path, "r", encoding=encoding) as f:
             return ujson.load(f)
 
 
-def read_jsonl_file(file_path: str) -> Dict:
-    with open(file_path, "r") as f:
+def read_jsonl_file(file_path: str, encoding: Optional[str] = None) -> Dict:
+    with open(file_path, "r", encoding=encoding) as f:
         return [ujson.loads(line) for line in f.readlines()]
 
 
@@ -102,19 +106,23 @@ def write_json_file(
     file_path: str,
     indent: int = 4,
     auto_detect_extension: bool = False,
+    encoding: Optional[str] = None,
 ) -> None:
     if auto_detect_extension and file_path.endswith(".jsonl"):
-        return write_jsonl_file(file_path)
+        return write_jsonl_file(
+            dict_object=dict_object, file_path=file_path, encoding=encoding
+        )
     else:
-        with open(file_path, "w") as f:
+        with open(file_path, "w", encoding=encoding) as f:
             ujson.dump(dict_object, f, indent=indent)
 
 
 def write_jsonl_file(
     dict_object: Dict,
     file_path: str,
+    encoding: Optional[str] = None,
 ):
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding=encoding) as f:
         for line in dict_object:
             f.write(f"{ujson.dumps(line)}\n")
 
@@ -208,18 +216,25 @@ def read_csv_file(
     delimiter: str = ",",
     quotechar: str = '"',
     show_progress: bool = False,
+    first_row_as_header: bool = True,
     process_row_func: Callable = None,
-) -> List[Dict[str, Any]]:
+) -> List[Union[Dict[str, Any], List[Any]]]:
     dict_list = []
     with open(file_path, "r") as f:
         tsv_file_reader = csv.reader(f, delimiter=delimiter, quotechar=quotechar)
-        # Get headers
-        header = next(tsv_file_reader)
+        if first_row_as_header:
+            # Get headers
+            header = next(tsv_file_reader)
         # Get values
         file_iterator = tqdm.tqdm(tsv_file_reader) if show_progress else tsv_file_reader
         for row in file_iterator:
             row = process_row_func(row) if process_row_func else row
-            dict_list.append(dict(zip(header, row)))
+            if first_row_as_header:
+                # Save a dict if header is available
+                dict_list.append(dict(zip(header, row)))
+            else:
+                # Save a list if header is not available
+                dict_list.append(row)
     return dict_list
 
 

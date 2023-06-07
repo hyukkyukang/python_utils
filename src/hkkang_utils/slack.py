@@ -1,4 +1,5 @@
 import contextlib
+import html
 import logging
 import os
 
@@ -68,7 +69,8 @@ def send_message(
     # Send message
     try:
         response = client.chat_postMessage(channel=channel, text=text_with_prefix)
-        assert response["message"]["text"] == text_with_prefix
+        decoded_text = html.unescape(response["message"]["text"])
+        assert decoded_text == text_with_prefix, f"{decoded_text}"
         logger.info(f"Sending message to channel {channel}: {text}")
     except SlackApiError as e:
         # You will get a SlackApiError if "ok" is False
@@ -78,7 +80,7 @@ def send_message(
 
 
 @contextlib.contextmanager
-def slack_notification(
+def notification(
     channel: str,
     success_msg: str = None,
     error_msg: str = None,
@@ -93,3 +95,8 @@ def slack_notification(
         if error_msg is not None:
             slack_messenger.send(f"{error_msg} ({e.__class__.__name__}: {e})")
         raise e
+
+
+@contextlib.contextmanager
+def slack_notification(*args, **kwargs):
+    raise NotImplementedError("Please use notification instead of slack_notification")
