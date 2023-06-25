@@ -53,6 +53,16 @@ def load_dotenv(stack_depth: int = 1):
 
     :param stack_depth: stack_depth of this function from the target caller, defaults to 1
     :type stack_depth: int, optional
+    Example:
+        # When the file structure is as follows:
+        # .env
+        # src/
+        #   |
+        #   |--test.py
+
+        # We can load dotenv from the test.py as follows (note that the stack_depth is 1)
+        load_dotenv(stack_depth=1)
+
     """
     # Get possible paths
     python_paths = (
