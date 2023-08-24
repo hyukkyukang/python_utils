@@ -1,18 +1,26 @@
 import math
+from typing import Type, Union
+
 import attrs
 
-from typing import Type
 
-@attrs.define
-class Training_context():
+class Training_context:
     """Syntatic sugar to keep track of training step"""
-    Trainer: Type = attrs.field()
-    effective_batch_size: int = attrs.field()
-    dataloader_batch_size: int = attrs.field()
-    eval_freq_estep: int = attrs.field()
-    max_estep: int = attrs.field()
-    # For counting
-    _steps_per_estep: int = attrs.field(init=False, default=None)
+
+    def __init__(
+        self,
+        Trainer: Type,
+        effective_batch_size: int,
+        dataloader_batch_size: int,
+        eval_freq_estep: int,
+        max_estep: int,
+    ):
+        self.Trainer = Trainer
+        self.effective_batch_size = effective_batch_size
+        self.dataloader_batch_size = dataloader_batch_size
+        self.eval_freq_estep = eval_freq_estep
+        self.max_estep = max_estep
+        self._steps_per_estep: Union[int, None] = None
 
     def __enter__(self):
         self.Trainer.step += 1
@@ -24,7 +32,9 @@ class Training_context():
     @property
     def steps_per_estep(self):
         if not self._steps_per_estep:
-            self._steps_per_estep = math.ceil(self.effective_batch_size / self.dataloader_batch_size)
+            self._steps_per_estep = math.ceil(
+                self.effective_batch_size / self.dataloader_batch_size
+            )
         return self._steps_per_estep
 
     @property
@@ -49,4 +59,4 @@ class Training_context():
 
 
 if __name__ == "__main__":
-    Training_context()
+    pass

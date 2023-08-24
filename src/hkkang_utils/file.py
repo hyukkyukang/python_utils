@@ -107,24 +107,29 @@ def write_json_file(
     indent: int = 4,
     auto_detect_extension: bool = False,
     encoding: Optional[str] = None,
+    ensure_ascii: Optional[bool] = False,
 ) -> None:
     if auto_detect_extension and file_path.endswith(".jsonl"):
         return write_jsonl_file(
-            dict_object=dict_object, file_path=file_path, encoding=encoding
+            dict_object=dict_object,
+            file_path=file_path,
+            encoding=encoding,
+            ensure_ascii=ensure_ascii,
         )
     else:
         with open(file_path, "w", encoding=encoding) as f:
-            ujson.dump(dict_object, f, indent=indent)
+            ujson.dump(dict_object, f, indent=indent, ensure_ascii=ensure_ascii)
 
 
 def write_jsonl_file(
     dict_object: Dict,
     file_path: str,
     encoding: Optional[str] = None,
+    ensure_ascii: Optional[bool] = False,
 ):
     with open(file_path, "w", encoding=encoding) as f:
         for line in dict_object:
-            f.write(f"{ujson.dumps(line)}\n")
+            f.write(f"{ujson.dumps(line, ensure_ascii=ensure_ascii)}\n")
 
 
 # Related to yaml files

@@ -1,5 +1,6 @@
 import inspect
 import os
+import sys
 from typing import Any, Callable, Dict, Iterable, List
 
 import dotenv
@@ -69,6 +70,7 @@ def load_dotenv(stack_depth: int = 1):
         os.environ["PYTHONPATH"].split(":") if "PYTHONPATH" in os.environ else []
     )
     working_dir_path = os.getcwd()
+    # TODO: Need to check if this works in all the cases
     caller_file_path = os.path.dirname(
         os.path.abspath(inspect.stack()[stack_depth].filename)
     )
@@ -79,3 +81,18 @@ def load_dotenv(stack_depth: int = 1):
         dotenv.load_dotenv(dotenv_path=os.path.join(path, ".env"))
         if "SLACK_ACCESS_TOKEN" in os.environ:
             break
+
+
+def is_debugger_active() -> bool:
+    """Return if the debugger is currently active"""
+
+    gettrace = getattr(sys, "gettrace", None)
+    # Check if gettrace is available
+    if gettrace is None:
+        return False
+    # Check trace
+    v = gettrace()
+    if v is None:
+        return False
+    else:
+        return True

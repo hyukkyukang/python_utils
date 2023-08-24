@@ -111,13 +111,13 @@ def is_torch_compile_available() -> None:
     return False
 
 
-def calculate_model_size(model: torch.nn.Module) -> float:
+def calculate_model_size(model: torch.nn.Module, in_MB: bool = False) -> float:
     """Compute model size in MB
 
     :param model: model to compute size
     :type model: torch.nn.Module
     :return: model size in MB
-    :rtype: float
+    :rtype: int
     """
     param_size = 0
     for param in model.parameters():
@@ -126,8 +126,19 @@ def calculate_model_size(model: torch.nn.Module) -> float:
     for buffer in model.buffers():
         buffer_size += buffer.nelement() * buffer.element_size()
 
-    model_size_in_mb = (param_size + buffer_size) / 1024**2
-    return model_size_in_mb
+    exp_val = 2 if in_MB else 3
+    return (param_size + buffer_size) / 1024**exp_val
+
+
+def calculate_model_param(model: torch.nn.Module) -> int:
+    """Count the number of trainable model parameter
+
+    :param model: model to compute size
+    :type model: torch.nn.Module
+    :return: number of model parameter
+    :rtype: int
+    """
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
 if __name__ == "__main__":

@@ -20,7 +20,6 @@ DEFAULT_ACCESS_TOKEN = (
 logger = logging.getLogger("SlackMessenger")
 
 
-@attrs.define
 class SlackMessenger:
     """Note that the default token is set by the environment variable SLACK_ACCESS_TOKEN.
 
@@ -29,11 +28,18 @@ class SlackMessenger:
         messenger.send_message("Hello World")
     """
 
-    channel: str = attrs.field()
-    token: str = attrs.field(default=attrs.Factory(lambda: DEFAULT_ACCESS_TOKEN))
-    append_src_info: bool = attrs.field(default=True)
+    def __init__(
+        self,
+        channel: str,
+        token: str = DEFAULT_ACCESS_TOKEN,
+        append_src_info: bool = True,
+    ):
+        self.channel = channel
+        self.token = token
+        self.append_src_info = append_src_info
+        self.__post_init__()
 
-    def __attrs_post_init__(self):
+    def __post_init__(self):
         if self.token is None:
             raise ValueError(
                 """Please set token or set SLACK_ACCESS_TOKEN environment variable.
@@ -109,6 +115,7 @@ def notification(
     success_msg: str = None,
     error_msg: str = None,
     token: str = DEFAULT_ACCESS_TOKEN,
+    disable: bool = False,
 ) -> None:
     """Send message when the task within the code block is finished
 
@@ -133,6 +140,13 @@ def notification(
     :type token: str, optional
     :rtype: None
     """
+    if misc_utils.is_debugger_active():
+        disable = True
+
+    if disable:
+        yield None
+        return None
+
     slack_messenger = SlackMessenger(channel=channel, token=token)
     try:
         yield slack_messenger
