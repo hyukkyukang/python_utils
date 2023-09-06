@@ -1,8 +1,8 @@
 import torch
 
 FEAT_SIZE = 10
-FLOAT32_SIZE = 4
-FLOAT16_SIZE = 2
+BYTES_FOR_FLOAT32 = 4
+BYTES_FOR_FLOAT16 = 2
 
 
 def to_mb(size: int) -> float:
@@ -39,7 +39,7 @@ class Float32ModelWithBias(torch.nn.Module):
 
     @property
     def model_size(self):
-        return (self.weight_size + self.bias_size) * FLOAT32_SIZE
+        return (self.weight_size + self.bias_size) * BYTES_FOR_FLOAT32
 
 
 class Float32ModelWithOutBias(torch.nn.Module):
@@ -72,7 +72,7 @@ class Float32ModelWithOutBias(torch.nn.Module):
 
     @property
     def model_size(self):
-        return (self.weight_size + self.bias_size) * FLOAT32_SIZE
+        return (self.weight_size + self.bias_size) * BYTES_FOR_FLOAT32
 
 
 class Float16ModelWithBias(torch.nn.Module):
@@ -105,4 +105,4 @@ class Float16ModelWithBias(torch.nn.Module):
 
     @property
     def model_size(self):
-        return (self.weight_size + self.bias_size) * FLOAT16_SIZE
+        return (self.weight_size + self.bias_size) * BYTES_FOR_FLOAT16

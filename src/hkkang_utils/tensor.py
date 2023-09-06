@@ -112,11 +112,12 @@ def is_torch_compile_available() -> None:
 
 
 def calculate_model_size(model: torch.nn.Module, in_MB: bool = False) -> float:
-    """Compute model size in MB
+    """Compute model size in KB or MB
 
     :param model: model to compute size
+        in_MB: if True, return size in MB, otherwise return size in KB
     :type model: torch.nn.Module
-    :return: model size in MB
+    :return: model size in KB or MB
     :rtype: int
     """
     param_size = 0
@@ -126,6 +127,7 @@ def calculate_model_size(model: torch.nn.Module, in_MB: bool = False) -> float:
     for buffer in model.buffers():
         buffer_size += buffer.nelement() * buffer.element_size()
 
+    # Default is in KB
     exp_val = 2 if in_MB else 3
     return (param_size + buffer_size) / 1024**exp_val
 
@@ -142,4 +144,4 @@ def calculate_model_param(model: torch.nn.Module) -> int:
 
 
 if __name__ == "__main__":
-    show_environment_setting()
+    show_environment_setting(print)
