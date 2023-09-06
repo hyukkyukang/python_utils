@@ -12,6 +12,14 @@ hkkang\_utils.concurrent module
    :undoc-members:
    :show-inheritance:
 
+hkkang\_utils.data module
+-------------------------
+
+.. automodule:: hkkang_utils.data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 hkkang\_utils.file module
 -------------------------
 
@@ -136,6 +144,14 @@ hkkang\_utils.time module
 -------------------------
 
 .. automodule:: hkkang_utils.time
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+hkkang\_utils.wandb module
+--------------------------
+
+.. automodule:: hkkang_utils.wandb
    :members:
    :undoc-members:
    :show-inheritance:
