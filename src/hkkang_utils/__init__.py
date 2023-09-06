@@ -1,9 +1,10 @@
 import sys
 
 sys_version = sys.version_info
-__version__ = "0.0.1"
+__version__ = "0.2.13"
 __all__ = [
     "concurrent",
+    "data",
     "file",
     "io",
     "list",
@@ -20,10 +21,13 @@ __all__ = [
     "tensor",
     "testing",
     "time",
+    "wandb",
 ]
 
 if sys_version[0] == 3 and sys_version[1] > 7:
     import hkkang_utils.concurrent
+
+import hkkang_utils.data
 import hkkang_utils.file
 import hkkang_utils.io
 import hkkang_utils.list
@@ -40,3 +44,4 @@ import hkkang_utils.string
 import hkkang_utils.tensor
 import hkkang_utils.testing
 import hkkang_utils.time
+import hkkang_utils.wandb

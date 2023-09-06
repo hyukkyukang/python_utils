@@ -1,8 +1,6 @@
 import math
 from typing import Type, Union
 
-import attrs
-
 
 class Training_context:
     """Syntatic sugar to keep track of training step"""
