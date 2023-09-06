@@ -24,7 +24,8 @@ dependencies=[
     "psycopg[binary,pool]",
     "slack_sdk",
     "torch",
-    "ujson"
+    "ujson",
+    "wandb",
 ]
 
 [project.urls]

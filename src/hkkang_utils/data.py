@@ -1,4 +1,19 @@
-import dataclasses
+import sys
+
+# Import dataclasses according to Python version
+sys_version = sys.version_info
+if sys_version[0] == 3 and sys_version[1] >= 7:
+    import dataclasses
+else:
+    try:
+        import dataclasses
+    except:
+        import subprocess
+
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "dataclasses"])
+    finally:
+        import dataclasses
+
 from typing import *
 
 import dacite
