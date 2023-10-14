@@ -45,3 +45,8 @@ def dataclass(cls):
     cls.from_dict = functools.partial(from_dict, data_class=cls)
     # cls.from_dict = from_dict
     return dataclasses.dataclass(cls)
+
+
+def field(*args, **kwargs):
+    """Syntax sugar for dataclasses.field"""
+    return dataclasses.field(*args, **kwargs)

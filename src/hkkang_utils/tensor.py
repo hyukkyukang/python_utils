@@ -132,7 +132,7 @@ def calculate_model_size(model: torch.nn.Module, in_MB: bool = False) -> float:
     return (param_size + buffer_size) / 1024**exp_val
 
 
-def calculate_model_param(model: torch.nn.Module) -> int:
+def count_parameters(model: torch.nn.Module, only_trainable: bool = True) -> int:
     """Count the number of trainable model parameter
 
     :param model: model to compute size
@@ -140,7 +140,24 @@ def calculate_model_param(model: torch.nn.Module) -> int:
     :return: number of model parameter
     :rtype: int
     """
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return sum(
+        p.numel() for p in model.parameters() if p.requires_grad or (not only_trainable)
+    )
+
+
+def print_trainable_parameters(model):
+    """
+    Prints the number of trainable parameters in the model.
+    """
+    trainable_params = 0
+    all_param = 0
+    for _, param in model.named_parameters():
+        all_param += param.numel()
+        if param.requires_grad:
+            trainable_params += param.numel()
+    print(
+        f"trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param}"
+    )
 
 
 if __name__ == "__main__":
