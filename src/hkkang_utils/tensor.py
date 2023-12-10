@@ -49,9 +49,7 @@ def zero_pad_batching_one_dim(
     )
     token_tensor = torch.zeros(shape, dtype=tensor_list[0].dtype, device=device)
     if return_mask:
-        mask_tensor = torch.ones(
-            token_tensor.shape[:-1], dtype=torch.bool, device=device
-        )
+        mask_tensor = torch.ones(shape, dtype=torch.bool, device=device)
     for idx, tensor in enumerate(tensor_list):
         token_tensor[idx, : len(tensor)] = tensor
         if return_mask:

@@ -24,19 +24,23 @@ class DBConnector:
 
     def fetchall(self) -> List[Any]:
         return self.cur.fetchall()
-    
-    def fetchall_with_col_names(self) -> Dict[str, Any]:
+
+    def fetchall_with_col_names(self) -> List[Dict[str, Any]]:
+        """Return a list of dictionaries with column names as keys and list of values as values"""
         rows = self.fetchall()
         col_names = [col.name for col in self.cur.description]
-        assert len(col_names) == len(set(col_names)), f"Column names are not unique, len({col_names}) vs len({set(col_names)})"
-        assert len(rows) == 0 or len(rows[0]) == len(col_names), f"Number of columns ({len(col_names)}) does not match number of rows ({len(rows[0])})"
+        assert len(col_names) == len(
+            set(col_names)
+        ), f"Column names are not unique, len({col_names}) vs len({set(col_names)})"
+        assert len(rows) == 0 or len(rows[0]) == len(
+            col_names
+        ), f"Number of columns ({len(col_names)}) does not match number of rows ({len(rows[0])})"
         # Create a dictionary with column names as keys and list of values as values
-        result_dict = {col_name: [] for col_name in col_names}
-        # Insert each column value of a row into the corresponding list
+        results: List[Dict[str, Any]] = []
         for row in rows:
-            for col_name, value in zip(col_names, row):
-                result_dict[col_name].append(value)
-        return result_dict
+            # Insert each column value of a row into the corresponding list
+            results.append({col_name: value for col_name, value in zip(col_names, row)})
+        return results
 
     def fetchone(self) -> List[Any]:
         return self.cur.fetchone()
@@ -44,8 +48,8 @@ class DBConnector:
     def execute_and_fetchall(self, sql: str) -> List[Any]:
         self.execute(sql)
         return self.fetchall()
-    
-    def execute_and_fetchall_with_col_names(self, sql: str) -> Dict[str, Any]:
+
+    def execute_and_fetchall_with_col_names(self, sql: str) -> List[Dict[str, Any]]:
         self.execute(sql)
         return self.fetchall_with_col_names()
 
@@ -75,7 +79,9 @@ class PostgresConnector(DBConnector):
         return super(PostgresConnector, cls).__new__(cls, *args, **kwargs)
 
     def connect(self, user_id, passwd, host, port, db_id):
-        self.conn = psycopg.connect(f"user={user_id} password={passwd} host={host} port={port} dbname={db_id}")
+        self.conn = psycopg.connect(
+            f"user={user_id} password={passwd} host={host} port={port} dbname={db_id}"
+        )
         self.cur = self.conn.cursor()
 
     def fetch_table_names(self) -> List[str]:

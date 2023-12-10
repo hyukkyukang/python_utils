@@ -39,6 +39,11 @@ def singleton(cls):
     return wrapper
 
 
+def get_instance_key(cls, *args, **kwargs):
+    """Get class key"""
+    return f"{cls.__module__}-{cls.__name__}-{cls.__repr_args__(*args, **kwargs)}"
+
+
 class SingletonMetaWithArgs(type):
     """Meta Singleton class with arguments. One object is created for each set of arguments"""
 
@@ -46,7 +51,7 @@ class SingletonMetaWithArgs(type):
 
     def __call__(cls, *args, **kwargs):
         # Get instance key
-        instance_key = cls.__repr_args__(*args, **kwargs)
+        instance_key = get_instance_key(cls, *args, **kwargs)
         if cls not in cls._instances.keys():
             cls._instances[cls] = dict()
         # Create instance if not exists
@@ -68,7 +73,7 @@ class SingletonABCMetaWithArgs(abc.ABCMeta):
 
     def __call__(cls, *args, **kwargs):
         # Get instance key
-        instance_key = cls.__repr_args__(*args, **kwargs)
+        instance_key = get_instance_key(cls, *args, **kwargs)
         if cls not in cls._instances.keys():
             cls._instances[cls] = dict()
         # Create instance if not exists
@@ -90,7 +95,7 @@ def singletonWithArgs(cls):
 
     def wrapper(*args, **kwargs):
         nonlocal instances
-        instance_key = SingletonMetaWithArgs.__repr_args__(*args, **kwargs)
+        instance_key = get_instance_key(SingletonMetaWithArgs, *args, **kwargs)
         if instance_key not in instances.keys():
             instances[instance_key] = cls(*args, **kwargs)
         return instances[instance_key]

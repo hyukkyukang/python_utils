@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hkkang_utils"
-version = "0.2.18"
+version = "0.2.21"
 authors = [{name="Hyukkyu Kang", email="hyukkyukang@gmail.com"}]
 description = "A collection of useful util functions"
 readme = "README.md"
