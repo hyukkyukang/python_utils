@@ -224,6 +224,7 @@ def read_csv_file(
     first_row_as_header: bool = True,
     process_row_func: Callable = None,
 ) -> List[Union[Dict[str, Any], List[Any]]]:
+    """Read csv like files (e.g., tsv, csv, etc.)"""
     dict_list = []
     with open(file_path, "r") as f:
         tsv_file_reader = csv.reader(f, delimiter=delimiter, quotechar=quotechar)
@@ -244,10 +245,23 @@ def read_csv_file(
 
 
 def write_csv_file(
-    list_of_dict: List[Dict[str, Any]], file_path: str, delimiter: str = ","
+    list_of_item: List[Union[Dict[str, Any], List[Any]]],
+    file_path: str,
+    delimiter: str = ",",
 ) -> None:
+    """Write csv like data (e.g., tsv, csv, etc.) into a file"""
+    assert len(list_of_item) > 0, "list_of_item is empty"
     with open(file_path, "w") as f:
         tsv_file_writer = csv.writer(f, delimiter=delimiter)
-        tsv_file_writer.writerow(list_of_dict[0].keys())
-        for dict_item in list_of_dict:
-            tsv_file_writer.writerow(dict_item.values())
+        if isinstance(list_of_item[0], dict):
+            # Add header
+            tsv_file_writer.writerow(list_of_item[0].keys())
+            # Add values
+            for dict_item in list_of_item:
+                tsv_file_writer.writerow(dict_item.values())
+        elif isinstance(list_of_item[0], list):
+            # Add values
+            for list_item in list_of_item:
+                tsv_file_writer.writerow(list_item)
+        else:
+            raise RuntimeError(f"Invalid type of list_of_item: {type(list_of_item[0])}")

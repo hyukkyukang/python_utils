@@ -39,12 +39,17 @@ def from_dict(data_class: dataclasses.dataclass, data: Dict) -> dataclasses.data
     return dacite.from_dict(data_class, data)
 
 
-def dataclass(cls):
-    cls.dic = property(asdict)
-    cls.dic_wo_none = property(lambda self: asdict(self, skip_none=True))
-    cls.from_dict = functools.partial(from_dict, data_class=cls)
-    # cls.from_dict = from_dict
-    return dataclasses.dataclass(cls)
+def dataclass(cls=None, **kwargs):
+    def wrap(cls):
+        cls.dic = property(asdict)
+        cls.dic_wo_none = property(lambda self: asdict(self, skip_none=True))
+        cls.from_dict = functools.partial(from_dict, data_class=cls)
+        return dataclasses.dataclass(cls, **kwargs)
+
+    if cls is None:
+        return wrap
+
+    return wrap(cls)
 
 
 def field(*args, **kwargs):
