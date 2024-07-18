@@ -8,7 +8,7 @@ __all__ = [
     "file",
     "io",
     "list",
-    "logger",
+    "logging",
     "metrics",
     "misc",
     "ml",
@@ -31,7 +31,7 @@ import hkkang_utils.data
 import hkkang_utils.file
 import hkkang_utils.io
 import hkkang_utils.list
-import hkkang_utils.logger
+import hkkang_utils.logging
 import hkkang_utils.metrics
 import hkkang_utils.misc
 import hkkang_utils.ml

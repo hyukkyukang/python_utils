@@ -1,7 +1,9 @@
 import functools
 import math
 import operator
-from typing import Any, List, Iterable, Union
+from typing import Any, Iterable, List, Union
+
+from tqdm import tqdm
 
 
 def do_flatten_list(list_of_list: List[List[Any]]) -> List[Any]:
@@ -37,9 +39,13 @@ def divide_into_chunks(lst: List[Any], num_chunks: int) -> List[List[Any]]:
 
 
 def chunks(
-    iterator: Union[Iterable[Any], List[Any]], chunk_size: int
+    iterator: Union[Iterable[Any], List[Any]],
+    chunk_size: int,
+    show_progress: bool = False,
 ) -> Iterable[List[Any]]:
     """Yield successive n-sized chunks from iterator."""
+    if show_progress:
+        iterator = tqdm(iterator)
     chunk = []
     for x in iterator:
         chunk.append(x)
