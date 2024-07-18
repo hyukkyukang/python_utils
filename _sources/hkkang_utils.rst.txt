@@ -44,10 +44,10 @@ hkkang\_utils.list module
    :undoc-members:
    :show-inheritance:
 
-hkkang\_utils.logger module
----------------------------
+hkkang\_utils.logging module
+----------------------------
 
-.. automodule:: hkkang_utils.logger
+.. automodule:: hkkang_utils.logging
    :members:
    :undoc-members:
    :show-inheritance:
