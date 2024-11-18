@@ -3,7 +3,8 @@ import logging
 import sys
 import time as time_module
 from contextlib import contextmanager
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, Generator, List, Optional, Tuple
+from weakref import WeakSet
 
 from hkkang_utils.pattern import SingletonABCMetaWithArgs
 
@@ -36,8 +37,8 @@ class Period:
 # Utility functions
 def prettify_time(time_in_sec: float) -> str:
     if time_in_sec < 60:
-        return f"{time_in_sec:.2f} seconds"
-    return f"{minute(time_in_sec):.0f}min {second(time_in_sec):.2f}sec"
+        return f"{time_in_sec:.4f} seconds"
+    return f"{minute(time_in_sec):.0f}min {second(time_in_sec):.4f}sec"
 
 
 def minute(time_in_sec: float) -> float:
@@ -50,7 +51,7 @@ def second(time_in_sec: float) -> float:
 
 # Timer class
 class TimerMeta(SingletonABCMetaWithArgs):
-    _call_cnt: Dict[str, Dict[str, int]] = dict()
+    _call_cnt: Dict[type, Dict[str, int]] = dict()
 
     def __call__(cls, class_name=None, func_name=None):
         # Figure out the class name and function name of the caller
@@ -76,6 +77,7 @@ class TimerMeta(SingletonABCMetaWithArgs):
 
 
 class Timer(metaclass=TimerMeta):
+    All_timer_list: WeakSet["Timer"] = WeakSet()
     """Timer class to measure the elapsed time of a function.
 
     Example1 (measure the time of code block):
@@ -127,6 +129,11 @@ class Timer(metaclass=TimerMeta):
         self.start_time: Optional[float] = None
         self.measured_times: List[Period] = []
         self.paused_times: List[Period] = []
+        # Append to the global timer list
+        Timer.All_timer_list.add(self)
+
+    def __del__(self) -> None:
+        Timer.All_timer_list.remove(self)
 
     @property
     def name(self) -> str:
@@ -163,7 +170,9 @@ class Timer(metaclass=TimerMeta):
 
     # Methods for measuring the time
     @contextmanager
-    def measure(self, print_measured_time: bool = False) -> "Timer":
+    def measure(
+        self, print_measured_time: bool = False
+    ) -> Generator["Timer", None, None]:
         # Pre processing
         self.start()
         yield self
@@ -173,7 +182,7 @@ class Timer(metaclass=TimerMeta):
             self.show_elapsed_time()
 
     @contextmanager
-    def pause(self) -> "Timer":
+    def pause(self) -> Generator["Timer", None, None]:
         # Pre processing
         current_time = time_module.time()
         self.measured_times.append(Period(self.start_time, current_time))
