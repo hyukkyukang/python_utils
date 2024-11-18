@@ -13,7 +13,7 @@ import yaml
 
 def get_files_in_directory(
     dir_path: str, filter_func: Optional[callable] = None, return_with_dir=False
-) -> list:
+) -> List:
     """Get paths of files in a directory
     :param dir_path: path of directory that you want to get files from
     :type dir_path: str
@@ -35,7 +35,7 @@ def get_files_in_directory(
 
 def get_files_in_all_sub_directories(
     root_dir_path: str, filter_func: Optional[callable] = None
-) -> list:
+) -> List:
     """Get paths of files in all sub directories
     :return: list of file paths in all sub directories which are valid
     :rtype: list
@@ -122,14 +122,14 @@ def write_json_file(
 
 
 def write_jsonl_file(
-    dict_object: Dict,
+    list_of_dict_object: List[Dict],
     file_path: str,
     encoding: Optional[str] = None,
     ensure_ascii: Optional[bool] = False,
 ):
     with open(file_path, "w", encoding=encoding) as f:
-        for line in dict_object:
-            f.write(f"{ujson.dumps(line, ensure_ascii=ensure_ascii)}\n")
+        for dict_line in list_of_dict_object:
+            f.write(f"{ujson.dumps(dict_line, ensure_ascii=ensure_ascii)}\n")
 
 
 # Related to yaml files

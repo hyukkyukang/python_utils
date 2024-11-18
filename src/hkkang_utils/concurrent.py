@@ -3,7 +3,9 @@ import logging
 import threading
 import traceback
 from concurrent.futures import ProcessPoolExecutor
-from typing import Callable
+from typing import *
+
+from hkkang_utils.list import divide_into_chunks, do_flatten_list
 
 
 def _shorten_string(text: str) -> str:
@@ -162,6 +164,118 @@ class MultiProcessor:
                 future.result()
         # Free memory
         self.executor.shutdown()
+
+
+class PartialProcessor:
+    """
+    This is a class to process data partially.
+    Use this class when you want to call multiple programs in terminal to process data in parallel.
+    It will split the data and process the data partially considering the total number of processes and the current process number.
+    """
+
+    def __init__(
+        self,
+        func: Optional[Callable] = None,
+        total_proc_n: Optional[int] = None,
+        current_proc_n: Optional[int] = None,
+    ):
+        self.func = func
+        self.total_proc_n = total_proc_n
+        self.current_proc_n = current_proc_n
+
+    def __call__(
+        self,
+        data: Union[List[Any], Dict],
+        func: Optional[Callable] = None,
+        total_proc_n: Optional[int] = None,
+        current_proc_n: Optional[int] = None,
+    ) -> Any:
+        func = self._get_func(func)
+        assert isinstance(
+            data, list
+        ), f"data must be list type, but {type(data)} is given."
+
+        # Divide the data into chunks (each chunk will be processed by each process)
+        target_chunk = self.get_partial_data(
+            data,
+            total_proc_n=total_proc_n,
+            current_proc_n=current_proc_n,
+        )
+
+        result: Any = func(target_chunk)
+
+        return result
+
+    def _get_total_proc_n(self, total_proc_n: Optional[int] = None) -> int:
+        """Get total number of processes."""
+        if total_proc_n is None:
+            total_proc_n = self.total_proc_n
+        assert (
+            total_proc_n is not None
+        ), f"Please set total_proc_n to the PartialProcess instance."
+        return total_proc_n
+
+    def _get_current_proc_n(self, current_proc_n: Optional[int] = None) -> int:
+        """Get current process number."""
+        if current_proc_n is None:
+            current_proc_n = self.current_proc_n
+        assert (
+            current_proc_n is not None
+        ), f"Please set current_proc_n to the PartialProcess instance."
+        return current_proc_n
+
+    def _get_func(self, func: Optional[Callable] = None) -> Callable:
+        """Get function to process the data."""
+        if func is None:
+            func = self.func
+        assert func is not None, f"Please set function to the PartialProcess instance."
+        return func
+
+    def get_partial_data(
+        self,
+        data: Union[List[Any], Dict],
+        total_proc_n: Optional[int] = None,
+        current_proc_n: Optional[int] = None,
+    ) -> Union[List[Any], Dict]:
+        # Get total number of processes and current process number
+        total_proc_n = self._get_total_proc_n(total_proc_n)
+        current_proc_n = self._get_current_proc_n(current_proc_n)
+
+        # Divide the data into chunks (each chunk will be processed by each process)
+        chunks: List = divide_into_chunks(data, num_chunks=total_proc_n)
+
+        return chunks[current_proc_n]
+
+    def divide_into_chunks(
+        self,
+        data: Union[List[Any], Dict],
+        total_proc_n: Optional[int] = None,
+    ) -> Union[List[Any], Dict]:
+        total_proc_n = self._get_total_proc_n(total_proc_n)
+        return divide_into_chunks(data, num_chunks=total_proc_n)
+
+    def merge(
+        self,
+        results: List[Any],
+        total_proc_n: Optional[int] = None,
+    ) -> List[Any]:
+        """Combine results from each process into a list with correct order."""
+
+        # Get total number of processes and current process number
+        total_proc_n = self._get_total_proc_n(total_proc_n)
+
+        # Merge the results
+        if isinstance(results, list):
+            assert type(results[0]) == list, f"results must be list of list type."
+            return do_flatten_list(results)
+        elif isinstance(results, dict):
+            assert (
+                type(results[0]) == list
+            ), f"value stored in the results dictionary must be list type."
+            return do_flatten_list([results[i] for i in range(total_proc_n)])
+        raise ValueError(
+            f"results must be list or dict type, but {type(results)} is given."
+        )
 
 
 if __name__ == "__main__":

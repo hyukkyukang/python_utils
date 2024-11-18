@@ -1,7 +1,7 @@
 import functools
 import math
 import operator
-from typing import Any, Iterable, List, Union
+from typing import *
 
 from tqdm import tqdm
 
@@ -30,12 +30,23 @@ def get(items: List[Any], idx: int, default: Any = "") -> Any:
         return default
 
 
-def divide_into_chunks(lst: List[Any], num_chunks: int) -> List[List[Any]]:
+def divide_into_chunks(
+    lst: Union[List[Any], Dict], num_chunks: int
+) -> Union[List[Any], Dict]:
     num_of_items_in_chunk = math.ceil(len(lst) / num_chunks)
-    return [
-        lst[i : i + num_of_items_in_chunk]
-        for i in range(0, len(lst), num_of_items_in_chunk)
-    ]
+    if isinstance(lst, dict):
+        # Convert dict items to a list of key-value tuples, split them, and then convert back to a list of dictionaries
+        items = list(lst.items())
+        divided_chunks = [
+            dict(items[i : i + num_of_items_in_chunk])
+            for i in range(0, len(items), num_of_items_in_chunk)
+        ]
+    elif isinstance(lst, list):
+        divided_chunks = [
+            lst[i : i + num_of_items_in_chunk]
+            for i in range(0, len(lst), num_of_items_in_chunk)
+        ]
+    return divided_chunks
 
 
 def chunks(
