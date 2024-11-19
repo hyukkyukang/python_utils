@@ -77,7 +77,6 @@ class TimerMeta(SingletonABCMetaWithArgs):
 
 
 class Timer(metaclass=TimerMeta):
-    All_timer_list: WeakSet["Timer"] = WeakSet()
     """Timer class to measure the elapsed time of a function.
 
     Example1 (measure the time of code block):
@@ -129,11 +128,6 @@ class Timer(metaclass=TimerMeta):
         self.start_time: Optional[float] = None
         self.measured_times: List[Period] = []
         self.paused_times: List[Period] = []
-        # Append to the global timer list
-        Timer.All_timer_list.add(self)
-
-    def __del__(self) -> None:
-        Timer.All_timer_list.remove(self)
 
     @property
     def name(self) -> str:
@@ -166,6 +160,8 @@ class Timer(metaclass=TimerMeta):
 
     @property
     def avg_elapsed_time(self) -> float:
+        if len(self.measured_times) == 0:
+            return 0
         return self.total_elapsed_time / len(self.measured_times)
 
     # Methods for measuring the time
