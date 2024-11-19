@@ -162,7 +162,7 @@ class Timer(metaclass=TimerMeta):
     def avg_elapsed_time(self) -> float:
         if self.call_cnt == 0:
             return 0
-        return self.total_elapsed_time / len(self.call_cnt)
+        return self.total_elapsed_time / self.call_cnt
 
     # Methods for measuring the time
     @contextmanager
