@@ -160,7 +160,7 @@ class Timer(metaclass=TimerMeta):
 
     @property
     def avg_elapsed_time(self) -> float:
-        if len(self.call_cnt) == 0:
+        if self.call_cnt == 0:
             return 0
         return self.total_elapsed_time / len(self.call_cnt)
 
