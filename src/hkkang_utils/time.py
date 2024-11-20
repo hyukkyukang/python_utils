@@ -1,10 +1,10 @@
 import inspect
+import json
 import logging
 import sys
 import time as time_module
 from contextlib import contextmanager
-from typing import Callable, Dict, Generator, List, Optional, Tuple
-from weakref import WeakSet
+from typing import Callable, Dict, Generator, List, Optional, Tuple, Union
 
 from hkkang_utils.pattern import SingletonABCMetaWithArgs
 
@@ -223,22 +223,40 @@ class Timer(metaclass=TimerMeta):
         )
 
     def summarize_measured_time(
-        self, silent: bool = False
-    ) -> Tuple[str, int, float, float]:
-        self.logger.info(f"Function name: {self.name}")
-        self.logger.info(f"Call count: {self.call_cnt}")
-        if not silent:
-            self.show_avg_elapsed_time()
-            self.show_total_elapsed_time()
-        return self.name, self.call_cnt, self.avg_elapsed_time, self.total_elapsed_time
+        self, silent: bool = False, in_dict: bool = False
+    ) -> Union[Dict[str, Union[str, int, float]], Tuple[str, int, float, float]]:
+        if in_dict:
+            result = {
+                "name": self.name,
+                "call_cnt": self.call_cnt,
+                "avg_elapsed_time": self.avg_elapsed_time,
+                "total_elapsed_time": self.total_elapsed_time,
+            }
+            if not silent:
+                self.logger.info(json.dumps(result, indent=4))
+        else:
+            result = (
+                self.name,
+                self.call_cnt,
+                self.avg_elapsed_time,
+                self.total_elapsed_time,
+            )
+            if not silent:
+                self.logger.info(f"Function name: {self.name}")
+                self.logger.info(f"Call count: {self.call_cnt}")
+                self.show_avg_elapsed_time()
+                self.show_total_elapsed_time()
+        return result
 
     @classmethod
     def summarize_measured_times(
-        cls, silent: bool = False
+        cls, silent: bool = False, in_dict: bool = False
     ) -> List[Tuple[str, int, float, float]]:
         return_values = []
         for timer in Timer._instances[cls].values():
-            return_values.append(timer.summarize_measured_time(silent=silent))
+            return_values.append(
+                timer.summarize_measured_time(silent=silent, in_dict=in_dict)
+            )
         return return_values
 
 
