@@ -222,18 +222,23 @@ class Timer(metaclass=TimerMeta):
             f"Average elapsed time: {prettify_time(self.avg_elapsed_time)}"
         )
 
-    def summarize_measured_time(self) -> Tuple[str, int, float, float]:
+    def summarize_measured_time(
+        self, silent: bool = False
+    ) -> Tuple[str, int, float, float]:
         self.logger.info(f"Function name: {self.name}")
         self.logger.info(f"Call count: {self.call_cnt}")
-        self.show_avg_elapsed_time()
-        self.show_total_elapsed_time()
+        if not silent:
+            self.show_avg_elapsed_time()
+            self.show_total_elapsed_time()
         return self.name, self.call_cnt, self.avg_elapsed_time, self.total_elapsed_time
 
     @classmethod
-    def summarize_measured_times(cls) -> List[Tuple[str, int, float, float]]:
+    def summarize_measured_times(
+        cls, silent: bool = False
+    ) -> List[Tuple[str, int, float, float]]:
         return_values = []
         for timer in Timer._instances[cls].values():
-            return_values.append(timer.summarize_measured_time())
+            return_values.append(timer.summarize_measured_time(silent=silent))
         return return_values
 
 
