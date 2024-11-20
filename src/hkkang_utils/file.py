@@ -265,3 +265,27 @@ def write_csv_file(
                 tsv_file_writer.writerow(list_item)
         else:
             raise RuntimeError(f"Invalid type of list_of_item: {type(list_of_item[0])}")
+
+
+def get_directory_size(directory: str, recursive: bool = True) -> int:
+    """
+
+    Calculate the total size of a directory, optionally including subdirectories.
+
+    Args:
+        directory (str): Path to the directory.
+        recursive (bool): Whether to include subdirectories in the size calculation.
+
+    Returns:
+        int: Total size of the directory in bytes.
+    """
+    total_size: int = 0
+    try:
+        for entry in os.scandir(directory):
+            if entry.is_file():
+                total_size += entry.stat().st_size
+            elif entry.is_dir() and recursive:
+                total_size += get_directory_size(entry.path, recursive=recursive)
+    except PermissionError:
+        print(f"Permission denied: {directory}")
+    return total_size
