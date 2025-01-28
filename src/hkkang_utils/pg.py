@@ -91,10 +91,10 @@ class PostgresConnector(DBConnector):
             WHERE schemaname != 'pg_catalog' AND 
                   schemaname != 'information_schema';
         """
-        self.cursor.execute(sql)
+        self.cur.execute(sql)
         tables = [
             f"{str(table[0].lower())}.{str(table[1].lower())}".replace("public.", "")
-            for table in self.cursor.fetchall()
+            for table in self.cur.fetchall()
         ]
         return tables
 
