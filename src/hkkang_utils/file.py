@@ -319,3 +319,29 @@ def get_disk_usage(directory: str, recursive: bool = True) -> int:
     except PermissionError:
         print(f"Permission denied: {directory}")
     return total_size
+
+
+def bytes_to_readable(size_bytes: int) -> str:
+    """
+    Convert a size in bytes to a human-readable format (B, KB, MB, GB, TB, etc.).
+
+    Args:
+        size_bytes (int): Size in bytes.
+
+    Returns:
+        str: Human-readable size with appropriate unit.
+    """
+    if size_bytes < 0:
+        raise ValueError("Size cannot be negative.")
+
+    if size_bytes == 0:
+        return "0 B"
+
+    size_units = ["B", "KB", "MB", "GB", "TB", "PB", "EB"]  # Extended to Exabytes
+    unit_index = 0
+
+    while size_bytes >= 1024 and unit_index < len(size_units) - 1:
+        size_bytes /= 1024.0
+        unit_index += 1
+
+    return f"{size_bytes:.2f} {size_units[unit_index]}"
