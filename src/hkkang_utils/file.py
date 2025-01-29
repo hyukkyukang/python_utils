@@ -269,23 +269,53 @@ def write_csv_file(
 
 def get_directory_size(directory: str, recursive: bool = True) -> int:
     """
+    Calculate the total logical size of a directory, optionally including subdirectories.
 
-    Calculate the total size of a directory, optionally including subdirectories.
+    This function sums up the actual file sizes (logical size) without considering
+    filesystem block alignment, sparse files, or compression.
 
     Args:
         directory (str): Path to the directory.
         recursive (bool): Whether to include subdirectories in the size calculation.
 
     Returns:
-        int: Total size of the directory in bytes.
+        int: Total logical size of the directory in bytes.
     """
     total_size: int = 0
     try:
         for entry in os.scandir(directory):
             if entry.is_file():
-                total_size += entry.stat().st_size
+                total_size += entry.stat().st_size  # Logical file size
             elif entry.is_dir() and recursive:
                 total_size += get_directory_size(entry.path, recursive=recursive)
+    except PermissionError:
+        print(f"Permission denied: {directory}")
+    return total_size
+
+
+def get_disk_usage(directory: str, recursive: bool = True) -> int:
+    """
+    Calculate the actual disk space used by a directory, optionally including subdirectories.
+
+    This function considers filesystem block size, sparse files, and metadata overhead,
+    providing an estimate similar to `du -sh`.
+
+    Args:
+        directory (str): Path to the directory.
+        recursive (bool): Whether to include subdirectories in the size calculation.
+
+    Returns:
+        int: Total disk usage of the directory in bytes.
+    """
+    total_size: int = 0
+    try:
+        for entry in os.scandir(directory):
+            if entry.is_file():
+                total_size += (
+                    entry.stat().st_blocks * 512
+                )  # Convert blocks (512-byte) to actual usage
+            elif entry.is_dir() and recursive:
+                total_size += get_disk_usage(entry.path, recursive=recursive)
     except PermissionError:
         print(f"Permission denied: {directory}")
     return total_size
