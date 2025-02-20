@@ -1,7 +1,7 @@
 import contextlib
-import html
 import logging
 import os
+from typing import *
 
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
@@ -11,21 +11,14 @@ import hkkang_utils.socket as socket_utils
 
 # Load environment variables
 misc_utils.load_dotenv(stack_depth=2)
-# Get default access token
-DEFAULT_ACCESS_TOKEN = (
-    os.environ["SLACK_ACCESS_TOKEN"] if "SLACK_ACCESS_TOKEN" in os.environ else None
-)
+
+DEFAULT_ACCESS_TOKEN = os.environ.get("SLACK_ACCESS_TOKEN")
 
 logger = logging.getLogger("SlackMessenger")
 
 
 class SlackMessenger:
-    """Note that the default token is set by the environment variable SLACK_ACCESS_TOKEN.
-
-    Example:
-        messenger = SlackMessenger(channel="test-channel")
-        messenger.send_message("Hello World")
-    """
+    """A Slack messaging wrapper for sending messages with an optional short preview."""
 
     def __init__(
         self,
@@ -39,24 +32,20 @@ class SlackMessenger:
         self.__post_init__()
 
     def __post_init__(self):
-        if self.token is None:
+        if not self.token:
             raise ValueError(
-                """Please set token or set SLACK_ACCESS_TOKEN environment variable.
-                    If you don't have the access token, follow the tutorial 
-                    to get bot OAuthToken and setup the bot permissions. 
-                    https://github.com/slackapi/python-slack-sdk/tree/main/tutorial"""
+                """Please set token or SLACK_ACCESS_TOKEN environment variable.
+                   Follow the tutorial to set up bot OAuthToken and permissions: 
+                   https://github.com/slackapi/python-slack-sdk/tree/main/tutorial"""
             )
 
-    def send(self, text: str) -> None:
-        """Send message to slack channel
-
-        :param text: Message to send
-        :type text: str
-        """
-        return send_message(
+    def send(self, text: str, comments: Optional[List[str]] = None) -> None:
+        """Send a Slack message with an optional comment."""
+        send_message(
             token=self.token,
             channel=self.channel,
             text=text,
+            comments=comments,
             append_src_info=self.append_src_info,
         )
 
@@ -65,47 +54,43 @@ def send_message(
     channel: str,
     text: str,
     token: str = DEFAULT_ACCESS_TOKEN,
+    comments: Optional[List[str]] = None,
     append_src_info: bool = True,
 ) -> None:
-    """Send message to Slack channel
+    """Send a Slack message with an optional comment."""
 
-    Example:
-        send_message(channel="test-channel", text="Hello world")
+    if not token:
+        raise ValueError("Please set SLACK_ACCESS_TOKEN environment variable.")
 
-    :param channel: Name of the channel to send the message
-    :type channel: str
-    :param text: Message to send
-    :type text: str
-    :param token: Slack access token, defaults to DEFAULT_ACCESS_TOKEN
-    :type token: str, optional
-    :param append_src_info: Whether to tell which part of the code the function is called, defaults to True
-    :type append_src_info: bool, optional
-    """
-    # Check if token is provided
-    if token is None:
-        raise ValueError(
-            "Please set token or set SLACK_ACCESS_TOKEN environment variable."
-        )
-    # Create client
     client = WebClient(token=token)
 
-    # Build message
     if append_src_info:
         ip = socket_utils.get_local_ip()
         host_name = socket_utils.get_host_name()
-        text_with_prefix = f"Message from {host_name}({ip}):\n{text}"
+        text_with_prefix = f"Message from {host_name} ({ip}):\n{text}"
+    else:
+        text_with_prefix = text
 
-    # Send message
+    # Send the message
     try:
-        response = client.chat_postMessage(channel=channel, text=text_with_prefix)
-        decoded_text = html.unescape(response["message"]["text"])
-        assert decoded_text == text_with_prefix, f"{decoded_text}"
-        logger.info(f"Sending message to channel {channel}: {text}")
+        response = client.chat_postMessage(
+            channel=channel,
+            text=text_with_prefix,
+        )
     except SlackApiError as e:
-        # You will get a SlackApiError if "ok" is False
-        assert e.response["ok"] is False
-        assert e.response["error"], "channel_not_found"
-        logger.info(f"Got an error: {e.response['error']}")
+        logger.error(f"Error sending text message: {e.response['error']}")
+
+    # Send the comment
+    if comments:
+        for comment in comments:
+            try:
+                response = client.chat_postMessage(
+                    channel=channel,
+                    thread_ts=response["ts"],
+                    text=comment,
+                )
+            except SlackApiError as e:
+                logger.error(f"Error sending comment: {e.response['error']}")
 
 
 @contextlib.contextmanager
@@ -114,9 +99,11 @@ def notification(
     success_msg: str = None,
     error_msg: str = None,
     token: str = DEFAULT_ACCESS_TOKEN,
+    comments: Optional[List[str]] = None,
     disable: bool = False,
+    disable_callback: Callable = None,
 ) -> None:
-    """Send message when the task within the code block is finished
+    """Send a message when the task within the code block is finished, with an optional short preview.
 
     Example:
         import hkkang_utils.slack as slack_utils
@@ -124,7 +111,8 @@ def notification(
         with slack_utils.notification(
             channel="test-channel",
             success_msg="Process done!",
-            error_msg="Error raised during the process"
+            error_msg="Error raised during the process",
+            comments=["This is a comment", "This is another comment"],
         ):
             # Perform your task here
             ...
@@ -133,14 +121,19 @@ def notification(
     :type channel: str
     :param success_msg: Message to send when the given code block completes, defaults to None
     :type success_msg: str, optional
-    :param error_msg: Message to send when error raise with the given code block, defaults to None
+    :param error_msg: Message to send when an error occurs, defaults to None
     :type error_msg: str, optional
-    :param token: slack access token, defaults to DEFAULT_ACCESS_TOKEN
+    :param token: Slack access token, defaults to DEFAULT_ACCESS_TOKEN
     :type token: str, optional
+    :param disable: Whether to disable Slack notifications, defaults to False
+    :type disable: bool, optional
+    :param comments: Comments to send, defaults to None
+    :type comments: List[str], optional
     :rtype: None
     """
     if misc_utils.is_debugger_active():
         disable = True
+        disable_callback = None
 
     if disable:
         yield None
@@ -149,14 +142,22 @@ def notification(
     slack_messenger = SlackMessenger(channel=channel, token=token)
     try:
         yield slack_messenger
+        # Check if the disable_callback is not None and if it returns True
+        if disable_callback is not None and disable_callback():
+            return None
+        # Send the success message
         if success_msg is not None:
-            slack_messenger.send(success_msg)
+            slack_messenger.send(success_msg, comments=comments)
     except Exception as e:
+        # Send the error message
         if error_msg is None:
             message_to_send = f"Error occurred at {e.__class__.__name__}: {e}"
         else:
             message_to_send = f"{error_msg} ({e.__class__.__name__}: {e})"
-        slack_messenger.send(message_to_send)
+        # Check if the disable_callback is not None and if it returns True
+        if disable_callback is not None and disable_callback():
+            return None
+        slack_messenger.send(message_to_send, comments=comments)
         raise e
 
 
