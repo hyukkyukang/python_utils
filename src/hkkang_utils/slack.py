@@ -120,6 +120,8 @@ class SlackMessenger:
                 # Send the start message as reply to the start message
                 self.send_reply(success_msg, thread_ts=thread_ts)
         except Exception as e:
+            if disable_callback is not None and disable_callback():
+                return
             # Send the error message
             message_to_send = f"{error_msg} ({e.__class__.__name__}: {e})"
             if start_msg is None:

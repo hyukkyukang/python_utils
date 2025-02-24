@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hkkang_utils"                  # Ensure this is present
-version = "0.2.55"                     # Ensure this is present
+version = "0.2.56"                     # Ensure this is present
 description = "A collection of useful util functions"
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.6"
