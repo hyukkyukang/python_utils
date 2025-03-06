@@ -77,6 +77,7 @@ class SlackMessenger:
         success_msg: str,
         error_msg: str,
         start_msg: Optional[str] = None,
+        user_id_to_mention: Optional[str] = None,
         replies: Optional[List[str]] = None,
         disable: bool = False,
         disable_callback: Optional[Callable[[], bool]] = None,
@@ -95,6 +96,13 @@ class SlackMessenger:
         if misc_utils.is_debugger_active() or disable:
             yield None
             return
+
+        # Append the user_id_to_mention to the messages if it is provided
+        if user_id_to_mention is not None:
+            success_msg = f"<@{user_id_to_mention}> {success_msg}"
+            error_msg = f"<@{user_id_to_mention}> {error_msg}"
+            if start_msg is not None:
+                start_msg = f"<@{user_id_to_mention}> {start_msg}"
 
         thread_ts = None  # Initialize thread_ts here
         try:
@@ -262,6 +270,7 @@ def notification(
     success_msg: str,
     error_msg: str,
     start_msg: Optional[str] = None,
+    user_id_to_mention: Optional[str] = None,
     token: str = DEFAULT_ACCESS_TOKEN,
     web_client: Optional[WebClient] = None,
     replies: Optional[List[str]] = None,
@@ -281,6 +290,7 @@ def notification(
         success_msg=success_msg,
         error_msg=error_msg,
         start_msg=start_msg,
+        user_id_to_mention=user_id_to_mention,
         replies=replies,
         disable=disable,
         disable_callback=disable_callback,
