@@ -24,7 +24,7 @@ jobs:
 
         strategy:
             matrix:
-                python-version: [3.11]
+                python-version: [3.13]
 
         # Steps represent a sequence of tasks that will be executed as part of the job
         steps:
@@ -32,7 +32,7 @@ jobs:
             - uses: actions/checkout@v3
             - uses: actions/setup-python@v4
               with:
-                  python-version: "3.11"
+                  python-version: "3.13"
                   cache: "pip" # caching pip dependencies
 
             - name: Install dependecy
